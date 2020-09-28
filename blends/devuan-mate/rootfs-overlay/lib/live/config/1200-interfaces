@@ -1,0 +1,34 @@
+#!/bin/sh
+
+## live-config(7) - System Configuration Scripts
+## Copyright (C) 2006-2013 Daniel Baumann <daniel@debian.org>
+##
+## This program comes with ABSOLUTELY NO WARRANTY; for details see COPYING.
+## This is free software, and you are welcome to redistribute it
+## under certain conditions; see COPYING for details.
+
+set -e
+
+# just a hack for /etc/network/interfaces
+
+ConfigureNetworkInterfaces ()
+{	
+	echo -n " network-interfaces"
+
+	echo \
+"# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+iface eth0 inet dhcp
+
+iface wlan0 inet dhcp" > /etc/network/interfaces
+
+}
+
+ConfigureNetworkInterfaces

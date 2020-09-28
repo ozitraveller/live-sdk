@@ -1,0 +1,24 @@
+#!/bin/sh
+
+cd ./hooks
+ls ./*.chroot
+
+## Processing local hooks
+if ls ./*.chroot > /dev/null 2>&1
+then
+
+	for HOOK in ./*.chroot
+	do
+		if [ ! -x ./"${HOOK}" ]
+		then
+			echo "chmod  hook : ${HOOK}"
+			chmod +x ./"${HOOK}"
+		fi
+
+		echo "Executing hook : ${HOOK}"
+		eval ./"${HOOK}" # || { Echo_error "${HOOK} failed (exit non-zero). You should check for errors."; exit 1 ;}
+
+		# echo "Removing hook : ${HOOK}"
+		rm -f ./"${HOOK}"
+	done
+fi

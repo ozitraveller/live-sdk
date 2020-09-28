@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+echo "$0"
+
+# Remove GNOME icon cache.
+#
+# This saves space some space.
+
+rm -f /usr/share/icons/*/icon-theme.cache

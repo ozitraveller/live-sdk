@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -x
+
+sudo rm -rf ./tmp/*
+sudo rm -rf ./dist/*
+sudo rm -rf ./log/*
+rm -f /home/ozi/.local/share/recently-used.xbel
+
+sudo touch ./tmp/.keep
+sudo touch ./dist/.keep
+sudo touch ./log/.keep
+# sudo touch ./mnt/.keep

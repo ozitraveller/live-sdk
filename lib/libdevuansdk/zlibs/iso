@@ -1,0 +1,390 @@
+#!/usr/bin/env zsh
+# Copyright (c) 2016-2017 Dyne.org Foundation
+# libdevuansdk is maintained by Ivan J. <parazyd@dyne.org>
+#
+# This file is part of libdevuansdk
+#
+# This source code is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This software is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this source code. If not, see <http://www.gnu.org/licenses/>.
+
+## burn baby
+
+#[[ $INSTALLER = 1 ]] && base_packages+=(grub-pc)
+
+iso_prepare_strap() {
+	fn iso_prepare_strap
+	req=(strapdir)
+	ckreq || return 1
+
+	notice "preparing strapdir for livecd"
+
+	cat <<EOF | sudo tee ${strapdir}/isoprep >/dev/null
+#!/bin/sh
+apt-get update
+apt-get --yes --force-yes install dialog live-boot live-config live-tools live-config-sysvinit live-boot-initramfs-tools
+apt-get --yes --force-yes autoremove
+apt-get clean
+EOF
+
+	chroot-script -d isoprep    || zerr
+}
+
+iso_setup_kernel() {
+	fn iso_setup_kernel "(override)"
+	req=(workdir strapdir abiname flavor)
+	ckreq || return 1
+
+	mkdir -p $workdir/binary/live
+	
+	act "copying kernel and initrd"
+	
+	cp $strapdir/boot/vmlinuz-$abiname-$flavor $workdir/binary/live/vmlinuz
+	cp $strapdir/boot/initrd.img-$abiname-$flavor  $workdir/binary/live/initrd.img
+	#cp $strapdir/boot/memtest86+.bin $workdir/binary/live/memtest
+}
+
+iso_syslinux() {
+	fn iso_syslinux
+	req=(workdir)
+	ckreq || return 1
+	
+	cat <<EOF | sudo tee $workdir/env/download_syslinux
+#!/bin/sh
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+rm -rf /home/syslinux 
+mkdir -p /home/syslinux
+cd /home/syslinux
+apt-get update
+apt-get source syslinux
+EOF
+
+	chroot-script -d download_syslinux $workdir/env || zerr
+	
+	find $workdir/env/home/d-i -name "*.debian.tar.*" -exec rm -f {} \;
+	di_changelog=$(find $workdir/env/home/syslinux/*/debian -wholename "*debian/changelog")
+	[[ -z $di_changelog && ${di_changelog+x} ]] && {
+		tarball=$(find $workdir/env/home/d-i -name "*.tar.*")
+		compress_type=${tarball##*.}
+		case $compress_type in
+			xz)
+				uncomp_args="-xzvf"
+				;;
+			gz)
+				uncomp_args="-Jxvf"
+				;;
+			bz2)
+				uncomp_args="jvxf"
+				;;
+			*) error "unknown compress type"; zerr;;
+		esac
+	
+		tar $uncomp_args $tarball
+		di_changelog=$(find $workdir/env/home/syslinux/*/debian -wholename "*debian/changelog")
+	}
+	
+	sources=${di_changelog%/*}
+	sources=${sources%/*}
+	sources=${sources##*/}
+	
+	notice "Building syslinux"
+	
+	cat <<EOF | sudo tee $workdir/env/build_syslinux
+#!/bin/bash
+cd /home/syslinux/${sources}
+var=\$(dpkg-checkbuilddeps 2>&1 | sed 's/[\(][^)]*[\)]//g')
+apt-get update && apt-get --yes --force-yes install \${var##*:}
+make bios
+EOF
+
+	chroot-script -d build_syslinux $workdir/env || zerr
+}
+
+iso_write_isolinux_cfg() {
+	fn iso_write_isolinux_cfg "(override)"
+	req=(R workdir os)
+	ckreq || return 1
+	
+	local version=$(find $workdir/env/home/syslinux -name "version")
+	sources=${version%/*}
+	sources=${sources##*/}
+	
+	mkdir -p $workdir/binary/isolinux	
+	
+	notice "copying syslinux"
+	cp -rav $workdir/env/home/syslinux/$sources/bios/core/isolinux.bin                  $workdir/binary/isolinux/
+	cp -rav $workdir/env/home/syslinux/$sources/bios/com32/chain/chain.c32              $workdir/binary/isolinux/
+	cp -rav $workdir/env/home/syslinux/$sources/bios/com32/elflink/ldlinux/ldlinux.c32  $workdir/binary/isolinux/
+	cp -rav $workdir/env/home/syslinux/$sources/bios/com32/lib/libcom32.c32             $workdir/binary/isolinux/	
+	cp -rav $workdir/env/home/syslinux/$sources/bios/com32/libutil/libutil.c32          $workdir/binary/isolinux/
+	cp -rav $workdir/env/home/syslinux/$sources/bios/com32/menu/vesamenu.c32            $workdir/binary/isolinux/
+	
+	notice "copying isolinux overlay"
+	cp -rav $R/extra/isolinux-overlay/*.cfg $workdir/binary/isolinux/
+	cp -rav $R/extra/isolinux-overlay/splash.png $workdir/binary/isolinux/
+}
+
+iso_squash_strap() {
+	fn iso_squash_strap
+	req=(workdir strapdir)
+	ckreq || return 1
+
+	mkdir -p $workdir/binary/live
+
+	notice "creating squashfs out of strapdir"
+
+	case $arch in
+		amd64|i386)
+			_compfilt="-Xbcj x86"
+			;;
+		arm*)
+			_compfilt="-Xbcj arm"
+			;;
+		*)
+			_compfilt=""
+			;;
+	esac
+	pushd $workdir
+	[[ -f binary/live/filesystem.squashfs ]] && rm -f binary/live/filesystem.squashfs
+	rm -f $strapdir/root/.bash_history
+	
+	# For unknown reasons, an empty file named 'Zero' is generated automaticaly at the root file "/" of strapdir:
+	[[ -f $strapdir/0 ]] && rm -f $strapdir/0
+	
+	sudo mksquashfs $strapdir binary/live/filesystem.squashfs \
+		-comp xz ${=_compfilt} -noappend || zerr
+
+	popd
+}
+
+iso_xorriso_build() {
+	fn iso_xorriso_build "(override)"
+	req=(R workdir arch earch blendlib version release make_isohybrid)
+	ckreq || return 1
+
+	notice "building iso..."
+	
+	#date_stamp=$(date "+%Y.%m.%d")
+	date_stamp=$(date "+%Y.%m")
+	#blend_distribution=${blend%%-*}
+	blend=${blendlib##*/}
+	blend_distribution=${blend%%-*}
+	#label=`echo "${blend_distribution}" | sed 's/^./\u&/'`
+	#release_label=`echo "${release}" | sed 's/^./\u&/'`
+	label=${blend##*-}
+	label=${label%%.*}
+	release_label=$release
+	image_name="${blend_distribution}-${version}-${release_label}_${date_stamp}-${label}_${earch}"
+	
+	isohybrid="$R"/extra/syslinux/isohdpfx.bin
+
+	rm -rf $R/dist
+	mkdir -p $R/dist
+	pushd $workdir
+	
+	[[ -f $workdir/binary/md5sums ]] && rm -f $workdir/binary/md5sums
+	
+	chmod -R 777 $workdir/binary
+	pushd $workdir/binary	
+	find . -xdev -type f -print0 | xargs -0 md5sum > md5sums
+	popd
+	
+	# If isohdpfx.bin gets moved again, maybe use:   isohdpfx=$(find /usr/lib/ -name isohdpfx.bin)
+    [[ $make_isohybrid = yes ]] && {
+       if [[ -f /usr/lib/syslinux/mbr/isohdpfx.bin ]] ; then
+          isohybrid=/usr/lib/syslinux/mbr/isohdpfx.bin
+       elif [[ -f /usr/lib/syslinux/isohdpfx.bin ]] ; then
+          isohybrid=/usr/lib/syslinux/isohdpfx.bin
+       elif [[ -f /usr/lib/ISOLINUX/isohdpfx.bin ]] ; then
+          #isohybrid_opt="-isohybrid-mbr "
+          isohybrid=/usr/lib/ISOLINUX/isohdpfx.bin
+		else
+		  echo "Can't create isohybrid.  File: isohdpfx.bin not found. The resulting image will be a standard iso file."
+		fi
+	}
+	
+	xorriso -as mkisofs -r -J -joliet-long -l \
+		-isohybrid-mbr $isohybrid \
+		-o $R/dist/customiso.iso "$workdir/binary" \
+		-partition_offset 16 \
+		-V "${blend_distribution} Live - ${flavor}" \
+		-b isolinux/isolinux.bin \
+		-c isolinux/boot.cat \
+		-no-emul-boot \
+		-boot-load-size 4 \
+		-boot-info-table \
+		-eltorito-alt-boot -e boot/grub/efiboot.img -isohybrid-gpt-basdat -no-emul-boot
+
+	mv $R/dist/customiso.iso $R/dist/$image_name.iso
+	
+	pushd $R/dist
+	md5sum $image_name.iso > $image_name.iso.md5
+	popd && popd
+
+	[[ "$DEBUG" = 1 ]] || {
+		[[ -n "$workdir" ]] && rm -rf "$workdir"
+	}
+}
+
+# create /boot and /efi for uefi.
+# most of the uefi code borrowed and adapted from David Hare, who borrowed and adapted it 
+# from similar scripts by Colin Watson and Patrick J. Volkerding.
+iso_make_efi() {
+	fn iso_make_efi "(override)"
+	req=(workdir mirror arch blend blendname)
+	ckreq || return 1
+	
+	notice "creating efi boot files"
+	
+	binary=$workdir/binary
+	efi_dir=$workdir/efi_dir
+	
+	if [ -d $efi_dir ] ; then
+		if [ -d $efi_dir/img-mnt ] ; then
+			umount -l $efi_dir/img-mnt
+		fi
+		rm -rf $efi_dir
+	fi
+	
+	mkdir $efi_dir
+	
+	# start with empty directories.
+	
+	if [ -d $binary/boot ] ; then
+		rm -rf $binary/boot
+	fi
+	
+	case $arch in	
+		amd64)  arch_efi="x86_64-efi"
+				boot_efi="bootx64.efi"
+				efi_pkg="grub-efi-amd64-bin"
+				;;
+		i386)   arch_efi="i386-efi"
+				boot_efi="bootia32.efi"
+				efi_pkg="grub-efi-ia32-bin"
+				;;
+		*) error "invalid grub_arch specified"; zerr;;
+	esac	
+	
+	mkdir -p $binary/efi/boot
+	mkdir -p $binary/boot/grub/theme
+	mkdir -p $binary/boot/grub/$arch_efi
+	
+	mkdir -p $efi_dir/efi/boot
+	mkdir -p $efi_dir/boot/grub/$arch_efi	
+	
+	# copy splash, theme and grub.cfg
+	cp $R/extra/isolinux-overlay/splash.png $binary/boot/grub/	
+	cp $R/extra/grub-overlay/1              $binary/boot/grub/theme
+	cp $R/extra/grub-overlay/grub.cfg       $binary/boot/grub/
+
+	tempdir=$efi_dir/"tmp"
+	mkdir -p $tempdir/boot/grub
+
+	cat >$tempdir/boot/grub/grub.cfg <<EOF
+search --file --set=root /isolinux/isolinux.cfg
+set prefix=(\$root)/boot/grub
+source \$prefix/${arch_efi}/grub.cfg
+EOF
+
+	pushd $tempdir
+	
+		# make a tarred "memdisk" to embed in the grub image
+		tar -cvf memdisk boot
+		
+		# make the grub image - Required grub-efi-amd64-bin or grub-efi-ia32-bin !!
+		grub-mkimage -O $arch_efi -m "memdisk" -o $boot_efi -p '(memdisk)/boot/grub' \
+			search iso9660 configfile normal memdisk tar cat part_msdos part_gpt fat ext2 ntfs ntfscomp hfsplus chain boot linux
+		
+	popd
+	
+	cp $tempdir/$boot_efi $efi_dir/efi/boot
+	cp $tempdir/$boot_efi $binary/efi/boot	
+	rm -rf $tempdir
+	
+	## Do the boot image "boot/grub/efiboot.img"	
+	dd if=/dev/zero of=$efi_dir/boot/grub/efiboot.img bs=1K count=1440
+	/sbin/mkdosfs -F 12 $efi_dir/boot/grub/efiboot.img
+	mkdir $efi_dir/img-mnt
+	mount -o loop $efi_dir/boot/grub/efiboot.img $efi_dir/img-mnt
+	mkdir -p $efi_dir/img-mnt/efi/boot
+	cp $efi_dir/efi/boot/$boot_efi $efi_dir/img-mnt/efi/boot/
+	umount -l $efi_dir/img-mnt
+	rmdir $efi_dir/img-mnt
+	
+	cp $efi_dir/boot/grub/efiboot.img $binary/boot/grub/
+	
+	pushd $efi_dir
+	wget $mirror/dists/$release/main/binary-$arch/Packages.gz
+	gzip -d Packages.gz
+	pkg=`grep "^Filename: pool/" Packages | grep "/${efi_pkg}_" | grep "_${arch}.deb"`
+	wget $mirror/${pkg#*" "}
+	pkg=${pkg##*/}
+	dpkg -x $pkg $efi_pkg
+	pkg=`grep "^Filename: pool/" Packages | grep "/grub-common_" | grep "_${arch}.deb"`
+	wget $mirror/${pkg#*" "}
+	pkg=${pkg##*/}
+	dpkg -x $pkg grub-common	
+	rm -f Packages
+	
+	# copy modules and font
+	cp $efi_dir/$efi_pkg/usr/lib/grub/$arch_efi/*.mod $binary/boot/grub/$arch_efi/
+	cp $efi_dir/$efi_pkg/usr/lib/grub/$arch_efi/*.lst $binary/boot/grub/$arch_efi/
+	
+	# Delete some modules
+	list=$R/extra/banmods
+	for line in $(cat $list); do
+		rm -f $binary/boot/grub/$arch_efi/${line}.mod
+	done
+	
+	# if this doesn't work try another font from the same place (grub's default, unicode.pf2, is much larger)
+	# Either of these will work, and they look the same to me. Unicode seems to work with qemu. -fsr
+#	cp grub-common/usr/share/grub/ascii.pf2 boot/grub/font.pf2
+	cp $efi_dir/grub-common/usr/share/grub/unicode.pf2 $binary/boot/grub/font.pf2
+	
+	# second grub.cfg file
+	for i in $(ls $efi_dir/$efi_pkg/usr/lib/grub/$arch_efi|grep part_|grep \.mod|sed 's/.mod//'); do
+		echo "insmod $i" >> $binary/boot/grub/$arch_efi/grub.cfg;
+	done	
+	
+	# Additional modules so we don't boot in blind mode. I don't know which ones are really needed.
+	#for i in efi_gop efi_uga ieee1275_fb vbe vga video_bochs video_cirrus jpeg png gfxterm ; do
+	#	echo "insmod $i" >> $workdir/binary/boot/grub/$arch_efi/grub.cfg ;
+	#done
+	
+	echo "source /boot/grub/grub.cfg" >> $workdir/binary/boot/grub/$arch_efi/grub.cfg
+	
+	rm -rf $efi_dir
+	
+	popd
+	unset tempdir efi_dir arch_efi boot_efi
+}
+
+iso_setup_variables() {
+	fn iso_set_variables "(override)"
+	req=(workdir blend)
+	ckreq || return 1
+	
+	blend=${blendlib##*/}
+	blend_distribution=${blend%%-*}
+	label=`echo "${blend_distribution}" | sed 's/^./\u&/'`
+	
+	sed -i "s/@DISTRO@/${label}/g" $workdir/binary/boot/grub/theme/1
+	
+	find $workdir/binary -name "*.cfg" -print | xargs sed -i "s/@MENU_TITLE@/${label} Live (${release}) - ${flavor}/g"
+	find $workdir/binary -name "*.cfg" -print | xargs sed -i "s/@DISTRO@/${label}/g"
+	find $workdir/binary -name "*.cfg" -print | xargs sed -i "s/@COMPONENTS@/config components username=${blend_distribution} localhost=${blend_distribution} nocomponents=passwd net.ifnames=0 nouveau.modeset=0 radeon.modeset=0 user-default-groups=audio,cdrom,dip,floppy,video,plugdev,netdev,powerdev,scanner,bluetooth,fuse,sudo/g"
+	find $workdir/binary -name "*.cfg" -print | xargs sed -i "s/@ABINAME@/${abiname}/g"
+	find $workdir/binary -name "*.cfg" -print | xargs sed -i "s/@FLAVOR@/${flavor}/g"
+}

@@ -1,0 +1,48 @@
+## Set root password
+[guest] $ sudo passwd root
+
+[guest] $ sudo apt-get update
+[guest] $ sudo apt-get install linux-headers-$(uname -r) build-essential
+reboot
+[guest] $ sudo apt-get install dkms
+
+Method #1 - mount working
+
+[guest] $ cd /media/cdrom0
+[guest] $ sudo sh ./VBoxLinuxAdditions.run
+
+
+
+Method #2 - manual mount
+
+1. Devices manu "Insert Guest Additions CD image..."
+2. Mount DVD drive on Guest OS
+[guest] # mkdir /mnt/dvd
+[guest] # mount -t iso9660 -o ro /dev/dvd /mnt/dvd
+3. Install VBoxLinuxAdditions
+[guest] # cd /mnt/dvd
+[guest] # ./VBoxLinuxAdditions.run
+
+4. Done? Unmount and remove
+[guest] # cd /
+[guest] # umount /dev/dvd
+[guest] # rmdir /mnt/dvd
+
+Reboot for VBoxLinuxAdditions to take effect
+
+
+
+Sharing folders
+$ mkdir ~/host
+
+# add this to ~/.bash_aliases
+alias re='source ~/.bashrc'
+alias mshr='sudo mount -t vboxsf -o uid=$UID,gid=$(id -g) share ~/host'
+
+run this
+$ re
+
+
+update-grub
+xdg-user-dirs-update
+# rm -rf /{Desktop,Documents,Downloads,Music,Pictures,Public,Templates,Video}

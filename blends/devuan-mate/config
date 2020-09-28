@@ -1,0 +1,148 @@
+#!/usr/bin/env zsh
+# config for devuan-mate.blend
+
+core_packages+=(
+
+	e2fsprogs
+	less
+	nano
+	vim
+	curl
+	lvm2
+	bzip2
+	
+)
+
+[[ $os = "gnuinos" ]] && core_packages+=(
+
+	gnuinos-keyring
+	
+)
+
+base_packages+=(
+
+	aptitude
+	nss-updatedb
+	parted
+	mawk
+	tmux
+	screen
+	ntp
+	zsh
+	git
+	firmware-linux-free
+	wspanish
+	wamerican
+	locales-all
+	mlocate
+	os-prober
+	debconf
+	dpkg-dev
+	lsof
+	bash-completion
+	texinfo
+	acpi-fakekey
+	acpi-support-base
+	apt-listchanges
+	discover
+	dnsutils
+	doc-debian
+	docutils-common
+	docutils-doc
+	ftp
+	lynx
+	iw
+	laptop-detect
+	mlocate
+	ncurses-term
+	nfs-common
+	reportbug
+	usbutils
+	w3m
+	inxi
+	whois
+	# gettext-base
+	isc-dhcp-client
+	ifupdown
+	net-tools
+	psmisc
+	inetutils-ping
+	libnl-3-200
+	libnl-genl-3-200
+	libpcsclite1
+	libuuid-perl
+	wireless-tools
+	wpasupplicant
+	ethtool
+	fakeroot
+	gawk
+	pmount
+	hwinfo	
+	
+)
+
+extra_packages+=(	
+	
+	task-english
+	mate-desktop-environment
+	task-print-server
+	gtk2-engines-murrine
+	gtk2-engines-pixbuf
+	gtk2-engines-xfce
+	gtk3-engines-xfce
+	popularity-contest
+	xinit
+	x11-xserver-utils
+	xbase-clients
+	xserver-xorg-input-all
+	xserver-xorg-input-kbd
+	xserver-xorg-input-mouse
+	xserver-xorg-video-all
+	xserver-xorg-input-synaptics
+	xserver-xorg-legacy
+	x11-xkb-utils
+	xorg
+	xdotool
+	xdg-user-dirs
+	xdg-utils
+	geany
+	slim
+	fake-hwclock
+	#wicd-gtk
+	putty
+	synaptic
+	gparted
+	searchmonkey
+	catfish
+	engrampa
+	dmz-cursor-theme
+	gimp
+	desktop-base
+	mate-icon-theme
+	hexchat
+	volumeicon-alsa
+	xterm
+	wmctrl
+	qasmixer
+	vlc
+	yad
+	mesa-utils
+	xscreensaver
+	xscreensaver-gl
+	tar
+	ffmpeg
+	gftp
+	grub2-splashimages
+	cinnabar-icon-theme
+	clearlooks-phenix-cinnabar-theme
+	gtk3-nooverlayscrollbar
+
+)
+
+purge_packages+=(
+
+	lightdm
+	pulseaudio
+	pavucontrol
+	
+)

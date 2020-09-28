@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+echo "$0"
+
+# Use mesa renderer by default
+if [ -e /etc/alternatives/glx ]
+then
+	update-alternatives --quiet --set glx /usr/lib/mesa-diverted
+fi

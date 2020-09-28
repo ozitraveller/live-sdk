@@ -1,0 +1,11 @@
+Package: systemd-sysv
+Pin: release o=Debian
+Pin-Priority: -1
+
+Package: *
+Pin: release a=beowulf
+Pin-Priority: 1000
+
+# Package: *
+# Pin: release a=beowulf-backports
+# Pin-Priority: 100

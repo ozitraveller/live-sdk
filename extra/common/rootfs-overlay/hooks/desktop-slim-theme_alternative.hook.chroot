@@ -1,0 +1,10 @@
+#!/bin/sh
+# set slim theme
+#############################################
+
+set -e
+
+echo STAR-LIVE-Hook: "$0"
+echo ""
+
+update-alternatives --install /usr/bin/desktop-slim-theme desktop-slim-theme /usr/share/slim/themes/star 99

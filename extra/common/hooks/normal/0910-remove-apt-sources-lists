@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+echo "$0"
+
+# Remove apt sources.list files
+
+rm -f /etc/apt/sources.list
+rm -f /etc/apt/sources.list.d/*.list

@@ -1,0 +1,23 @@
+clear
+
+# echo "  -----------------------------[ screen $STEP of $STEPS ]----------------------------
+echo "
+
+  INSTALL mp3blaster (Full-screen console mp3 and Ogg Vorbis player)
+  -------------------------------
+  By default, Star does not come with mp3blaster 
+  Would you like to install mp3blaster now? If you choose to do 
+  this, the following packages will be installed:
+
+      mp3blaster
+	  
+  Note: additional packages listed as dependencies will also be installed.
+	https://packages.debian.org/buster/mp3blaster
+  
+  Usage :
+	Open terminal, run mp3blaster, select a station according to your mood & 
+	don't forget to turn up the volume.
+  
+if prompt "  Would you like to install mp3blaster?"; then
+	sudo apt-get install -y mp3blaster
+fi

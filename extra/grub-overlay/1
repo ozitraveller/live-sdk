@@ -1,0 +1,49 @@
+title-color: "#7c7893"
+title-text: "@DISTRO@ UEFI Live"
+title-font: "Sans Regular 16"
+desktop-color: "#33313b"
+desktop-image: "/isolinux/splash.png"
+message-color: "white"
+message-bg-color: "black"
+terminal-font: "Sans Regular 12"
+
++ vbox {
+  top = 80
+  left = 45%
+  width = 60%
+  height = 100
+  + hbox {
+    left = 0
+    + label {text = "Gnuinos Beowulf - amd64" font = "Sans 10" color = "#7c7893" align = "center"}
+  }
+}
+
++ boot_menu {
+  left = 18%
+  width = 60%
+  top = 150
+  height = 300
+  item_font = "Sans Regular 12"
+  item_color = #7c7893
+  selected_item_color = "white"
+  item_height = 20
+  item_padding = 15
+  item_spacing = 5
+}
+
++ vbox {
+  top = 100%-60
+  left = 10%
+  + hbox {
+    top = 0
+    left = 20%
+    + label {text = "Enter:  " font = "Sans 10" color = "#7c7893" align = "left"}
+    + label {text = "Select  " font = "Sans 10" color = "#7c7893" align = "left"}
+  }
+  + hbox {
+    top = 0
+    left = 20%
+    + label {text = "C:  " font = "Sans 10" color = "#7c7893" align = "left"}
+    + label {text = "GRUB Command Line" font = "Sans 10" color = "#7c7893" align = "left"}
+  }  
+}

@@ -1,0 +1,91 @@
+#!/usr/bin/env zsh
+# Copyright (c) 2016-2018 Dyne.org Foundation
+# libdevuansdk is maintained by Ivan J. <parazyd@dyne.org>
+#
+# This file is part of libdevuansdk
+#
+# This source code is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This software is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this source code. If not, see <http://www.gnu.org/licenses/>.
+
+## default system configurations
+
+conf_print_debconf() {
+	fn conf_print_debconf
+
+	cat <<EOF
+#!/bin/sh
+apt-get update
+apt-get --yes --force-yes install locales
+sed -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' -i /etc/locale.gen
+locale-gen LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_CTYPE=en_US.UTF-8
+source /etc/default/locale
+apt-get clean
+EOF
+}
+
+conf_print_hostname() {
+	fn conf_print_hostname
+	req=(os)
+	ckreq || return 1
+
+	print $os
+}
+
+conf_print_hosts() {
+	fn conf_print_hosts
+	req=(os)
+	ckreq || return 1
+
+	cat <<EOF
+127.0.0.1        ${os}                localhost
+::1              ip6-localhost ip6-loopback
+fe00::0          ip6-localnet
+fe00::0          ip6-mcastprefix
+fe02::1          ip6-allnodes
+fe02::1          ip6-allrouters
+EOF
+}
+
+conf_print_resolvconf() {
+	fn conf_print_resolvconf "(override)"
+
+	cat <<EOF
+## google's nameservers
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+EOF
+}
+
+conf_print_sourceslist() {
+	fn conf_print_sourceslist
+	req=(mirror release section)
+	ckreq || return 1
+
+	[[ $APT_CACHE = 1 ]] && {
+		cat <<EOF
+deb file:/mnt ./
+
+EOF
+}
+
+	cat <<EOF
+deb ${mirror} ${release} ${section}
+deb-src ${mirror} ${release} ${section}
+
+deb ${mirror} ${release}-updates ${section}
+deb-src ${mirror} ${release}-updates ${section}
+
+#deb ${mirror} ${release}-security ${section}
+#deb-src ${mirror} ${release}-security ${section}
+EOF
+}

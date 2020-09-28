@@ -1,0 +1,82 @@
+#!/usr/bin/env zsh
+# Copyright (c) 2016-2017 Dyne.org Foundation
+# live-sdk is written and maintained by Ivan J. <parazyd@dyne.org>
+#
+# This file is part of live-sdk
+#
+# This source code is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This software is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this source code. If not, see <http://www.gnu.org/licenses/>.
+
+
+## live-sdk configuration
+## ----------------------
+
+MAKEOPTS="-j$(grep -c 'processor' /proc/cpuinfo)"
+
+#~ os="devuan"
+#~ url="deb.devuan.org"
+#~ root="/merged"
+#~ mirror="http://$url$root"
+
+os="devuan"
+url="deb.devuan.org"
+root="/merged"
+url_pkg=$url$root
+url_di=$url_pkg
+mirror="http://$url_pkg"
+
+release_name="spock"
+
+## common packages for all images
+core_packages+=(
+	
+	devuan-keyring
+	debian-keyring
+	ca-certificates
+	libc6
+	libc-bin
+	initramfs-tools
+	sysvinit
+	sysvinit-core
+	sysvinit-utils
+	
+)
+
+[[ $os = "gnuinos" ]] && core_packages+=(
+
+	gnuinos-keyring
+	
+)
+
+base_packages+=(
+
+	base-files
+	lsb-release
+	lsb-base
+	adduser
+	linux-base
+	locales
+	util-linux-locales
+	openssh-server
+	openssh-client
+	console-setup
+	locales
+	console-data
+	dselect
+	rsync
+	gnupg2
+	sudo
+	rpl
+	apt-utils
+	
+)

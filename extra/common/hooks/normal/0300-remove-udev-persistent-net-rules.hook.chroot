@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+echo "$0"
+
+# Remove udev persistent rules.
+#
+# This removes udev persistent rules that cache the host systems mac address to
+# remember its device name.
+
+for _FILE in /etc/udev/rules.d/*persistent-net.rules
+do
+	if [ -e "${_FILE}" ]
+	then
+		: > ${_FILE}
+	fi
+done

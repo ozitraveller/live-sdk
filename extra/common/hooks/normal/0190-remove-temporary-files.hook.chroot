@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+echo "$0"
+
+# Remove temporary files
+rm -rf /var/cache/man/*
+
+for _DIRECTORY in /tmp /var/tmp
+do
+	rm -rf ${_DIRECTORY}
+
+	mkdir -p ${_DIRECTORY}
+	chmod 1777 ${_DIRECTORY}
+done

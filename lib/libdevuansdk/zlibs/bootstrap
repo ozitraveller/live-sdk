@@ -1,0 +1,175 @@
+#!/usr/bin/env zsh
+# Copyright (c) 2016-2017 Dyne.org Foundation
+# libdevuansdk maintained by Ivan J. <parazyd@dyne.org>
+#
+# This file is part of libdevuansdk
+#
+# This source code is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This software is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this source code. If not, see <http://www.gnu.org/licenses/>.
+
+arrs+=(core_packages base_packages extra_packages purge_packages)
+
+bootstrap_complete_base() {
+	fn bootstrap_complete_base "$@"
+	req=(workdir strapdir os arch release)
+	ckreq || return 1
+	
+	notice "bootstrapping $os $arch base"
+
+	mkdir -p $strapdir
+
+	notice "running debootstrap stage 1"
+
+	sudo DEBOOTSTRAP_DIR="$LIBPATH/extra/debootstrap" "$LIBPATH/extra/debootstrap/debootstrap" \
+		--keyring="$LIBPATH/extra/devuan-keyring/keyrings/devuan-archive-keyring.gpg" \
+		--foreign \
+		--include="gnupg2" \
+		--arch $arch $release $strapdir $mirror || zerr
+
+	sudo mkdir -p $strapdir/tmp
+	sudo mkdir -p $strapdir/var/tmp
+	sudo chmod 1777 $strapdir/tmp
+	sudo chmod 1777 $strapdir/var/tmp
+
+	## debootstrap stage 2
+	notice "running debootstrap stage 2"
+	sudo chroot $strapdir \
+		/debootstrap/debootstrap --second-stage || zerr
+
+	## write all system configuration
+	notice "writing system configuration"
+	conf_print_hostname    | sudo tee $strapdir/etc/hostname             >/dev/null
+	conf_print_hosts       | sudo tee $strapdir/etc/hosts                >/dev/null
+	conf_print_resolvconf  | sudo tee $strapdir/etc/resolv.conf          >/dev/null
+	conf_print_sourceslist | sudo tee $strapdir/etc/apt/sources.list     >/dev/null
+	conf_print_debconf     | sudo tee $strapdir/debconf.set              >/dev/null
+
+	chroot-script -d debconf.set || zerr
+	rm -f $strapdir/debconf.set	
+	
+	bootstrap_tar_pack  $workdir/bootstrap_base.tar.gz   || { zerr; wrapup }
+	bootstrap_tar_unpack  $workdir/env                   || { zerr; wrapup }
+
+}
+
+bootstrap_tar_pack() {
+	fn bootstrap_tar_pack "$@"
+	bootstrap_tgz=$1
+	req=(bootstrap_tgz)
+	ckreq || return 1
+
+	local _dest=$(dirname $bootstrap_tgz)
+
+	if [[ -f $bootstrap_tgz ]]; then
+		notice "tarball found already in $_dest"
+	else
+		notice "Creating boostrap tarball in $bootstrap_tgz"
+		silly
+		pushd $strapdir
+		mkdir -p $_dest
+		silly
+		sudo tar czfp $bootstrap_tgz \
+			--exclude={./boot,./dev,./sys,./proc} .
+		popd
+	fi
+}
+
+bootstrap_tar_unpack() {
+	fn bootstrap_tar_unpack $@
+	req=(bootstrap_tgz)
+	ckreq || return 1
+	
+	if [ -z $1 ]; then
+		req=(strapdir)
+		ckreq || return 1
+		local _dest=$strapdir
+	else
+		local _dest=$1
+	fi
+	
+	if [[ -d $_dest ]]; then
+		notice "The target ${_dest} already exists"
+	else
+		notice "Unpacking ${bootstrap_tgz} in ${_dest}"
+		mkdir -p $_dest
+		silly
+		tar xfp $bootstrap_tgz -C $_dest
+		mkdir -p $_dest/{boot,dev,sys,proc}
+	fi
+}
+
+bootstrap_thirdstage() {
+	fn bootstrap_thirdstage
+	req=(R os strapdir arch release)
+	
+	## write third-stage for chroot
+	bootstrap_config_thirdstage || sudo tee $strapdir/thirdstage >/dev/null
+
+	## chroot into it and configure further
+	## debootstrap stage 3
+	notice "running debootstrap stage 3"
+
+	chroot-script -d thirdstage || zerr
+}
+
+bootstrap_config_thirdstage() {
+	fn bootstrap_config_thirdstage
+	req=(R os strapdir arch release core_packages base_packages extra_packages)
+	ckreq || return 1
+	
+	full_list=(
+
+		${core_packages[*]}
+		${base_packages[*]}
+		${extra_packages[*]}
+	)
+
+	cat << EOF | sudo tee $strapdir/thirdstage >/dev/null
+#!/bin/bash
+## check if all our core, base and extra packages exist
+
+apt-get update
+allpkgs="\$(apt-cache search '.' | cut -d' ' -f1)"
+
+for i in ${full_list} ; do
+	printf "%s" "\$allpkgs" | grep -q "^\$i$" || {
+		case "\$i" in
+			--*) continue ;;
+			*)   missing="\$missing \$i" ;;
+		esac
+	}
+done
+
+[ -n "\$missing" ] && {
+	printf "\033[1;31m[!!] some packages don't exist\033[0m\n"
+	printf "%s\n" "\$missing"
+	exit 1
+}
+	
+notice "Installing the core packages..."
+DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${core_packages}
+
+notice "Installing the base packages..."
+DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${base_packages}
+
+notice "Installing the extra packages..."
+DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${extra_packages}
+
+notice "Purge packages..."
+(( ${#purge_packages[*]} > 0 )) && apt-get --yes --force-yes purge ${purge_packages}
+
+apt-get --yes --force-yes autoremove
+apt-get clean
+EOF
+
+}

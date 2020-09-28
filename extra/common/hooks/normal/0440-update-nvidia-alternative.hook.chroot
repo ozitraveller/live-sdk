@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+echo "$0"
+
+# Use newest nvidia version by default
+if [ -e /etc/alternatives/nvidia ] && [ -e /usr/lib/nvidia/current ]
+then
+	update-alternatives --quiet --set nvidia /usr/lib/nvidia/current
+fi

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+echo "$0"
+
+# Create /etc/environment and /etc/default/locale
+touch /etc/environment
+touch /etc/default/locale

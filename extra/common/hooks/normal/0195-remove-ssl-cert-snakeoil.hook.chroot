@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+
+echo "$0"
+
+# Remove ssl-cert snakeoil
+
+if [ -e /etc/ssl/certs/ssl-cert-snakeoil.pem ]
+then
+	rm -f /etc/ssl/certs/$(openssl x509 -hash -noout -in /etc/ssl/certs/ssl-cert-snakeoil.pem)
+
+	rm -f /etc/ssl/certs/ssl-cert-snakeoil.pem
+	rm -f /etc/ssl/private/ssl-cert-snakeoil.key
+fi
