@@ -178,6 +178,7 @@ rm -f vmlinuz.old initrd.img.old
 rm -f /etc/ssh/ssh_host_*
 rm -f /etc/fstab
 
+# see here di_preseed_cfg
 chmod +x /usr/bin/preseed-hack
 # chmod +x /lib/live/config/1200-interfaces
 
@@ -336,11 +337,11 @@ blend_cleanup() {
 notice "Running blend_cleanup"
 
 	cat <<EOF | sudo tee ${strapdir}/scrubclean >/dev/null
-#!/bin/bash
+#!/bin/sh
 
 rm -rf /hooks
 
-# apt-get --yes --force-yes autoremove
+apt-get --yes --force-yes autoremove
 apt-get clean
 
 EOF
@@ -474,6 +475,8 @@ di_win32-loader() {
 	
 	notice "Setting up win32-loader ..."
 
+	apt-get --yes --force-yes install win32-loader
+
 	sudo mv ${workdir}/binary ${strapdir}
 		
 	sudo cp -rf ${strapdir}/usr/share/win32/* ${strapdir}/binary
@@ -524,7 +527,8 @@ g2ldr.mbr=g2ldr.mbr
 EOF
 
 
-	sudo mv ${strapdir}/binary ${workdir}	
+	sudo mv ${strapdir}/binary ${workdir}
+	apt-get --yes --force-yes purge win32-loader	
 
 }
 
@@ -755,8 +759,6 @@ UDebIndices: Packages Release . .gz " > $workdir/binary/conf/distributions
 		libpng16-16
 		dmsetup
 		firmware-linux-nonfree
-		firmware-amd-graphics
-		firmware-misc-nonfree
 	)
 
 	for line in $di_pkgs; do
@@ -800,12 +802,12 @@ UDebIndices: Packages Release . .gz " > $workdir/binary/conf/distributions
 	rm -rf $workdir/binary/conf
 	rm -rf $workdir/binary/db
 	ln -s $workdir/binary/dists/$release $workdir/binary/dists/$suite
-	ln -s $workdir/binary $workdir/binary/debian
+	# ln -s $workdir/binary $workdir/binary/debian
 		
 	notice "Symlink firmware packages to /firmware"
 	if ls $workdir/binary/pool/main/f/firmware-nonfree/firmware-linux-nonfree*.deb > /dev/null 2>&1
 	then
-		DI_FIRMWARE_PACKAGES="firmware-linux-nonfree firmware-amd-graphics firmware-misc-nonfree"
+		DI_FIRMWARE_PACKAGES="firmware-linux-nonfree"
 		if [ -n "${DI_FIRMWARE_PACKAGES}" ]
 		then
 			echo "syslink - firmware"
@@ -1078,6 +1080,8 @@ build_iso_dist() {
 	ckreq || return 1
 
 	notice "building complete iso image"
+	
+	notice "[abiname] : ${abiname}"
 
 	bootstrap_complete_base             || { zerr; wrapup }
 	build_kernel_${arch}                || { zerr; wrapup }

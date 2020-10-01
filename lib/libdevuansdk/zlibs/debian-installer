@@ -277,7 +277,7 @@ EOF
 	done
 
 	cat <<EOF | sudo tee $workdir/env/build_d-i
-#!/bin/bash
+#!/bin/sh
 cd /home/d-i/${sources}
 var=\$(dpkg-checkbuilddeps 2>&1 | sed 's/[\(][^)]*[\)]//g')
 apt-get update && apt-get --yes --force-yes install \${var##*:} ${_extra_deps}

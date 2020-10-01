@@ -12,8 +12,8 @@ core_packages+=(
 	ntfs-3g
 	xfsprogs
 	xfsdump 
-	#~ reiserfsprogs 
-	#~ reiser4progs 
+	reiserfsprogs 
+	reiser4progs 
 	jfsutils 		
 	gpart
 	less
@@ -47,13 +47,13 @@ base_packages+=(
 	# os-prober
 	lsof
 	bash-completion
-	acpi-support-base
+	# acpi-support-base
 	apt-listchanges
 	dnsutils
 	ftp
 	gnupg2
 	iw
-	laptop-detect
+	# laptop-detect
 	reportbug
 	usbutils
 	whois
@@ -76,7 +76,7 @@ base_packages+=(
 	#~ fakeroot	
 	gawk
 	hwinfo
-	win32-loader
+	#~ win32-loader
 	wget
 	
 )
@@ -176,6 +176,7 @@ extra_packages+=(
 	ncdu
 	pciutils
 	task-english
+	# kexec-tools
 	openbox
 	obconf
 	obmenu
@@ -184,14 +185,16 @@ extra_packages+=(
 	connman
 	connman-ui
 	hsetroot
-	lxterminal
 	arandr
 	lxappearance
+	lxterminal
+	mirage
 	mousepad
 	pcmanfm
 	libfm-modules
-	mirage
 	lsof
+	# spacefm
+	# udevil
 	yad
 	mpv
 	pmount
@@ -199,56 +202,70 @@ extra_packages+=(
 	libnotify-bin
 	openssh-client
 	openssh-server
-	haveged
+	# haveged
 	galternatives
-	libsox-fmt-all
-	reiser4progs
-	reiserfsprogs
-	sysvinit
+	#~ libsox-fmt-all
+	#~ reiser4progs
+	#~ reiserfsprogs
+	#~ sysvinit
 
 )
 
 purge_packages+=(
 
+	lm-sensors
+	obsession
+	ofono
 	aptitude
 	aptitude-common
+	avahi-daemon
+	bluez
 	console-common
 	console-data
 	console-setup
 	console-setup-linux
+	cups-bsd
+	cups-client
 	cups-common
+	debian-keyring
+	deselect
 	dhcpcd5
 	dialog
 	dnsutils
 	dselect
 	elogind
 	enchant
+	evince
 	firmware-linux-free
+	firmware-misc-nonfree
+	fonts-droid-fallback
+	fonts-noto-mono
 	gdisk
-	geoip-database
-	gvfs64
-	gvfs-backends
-	gvfs-common
-	gvfs-daemons
-	gvfs-fuse
-	gvfs-libs64
+	#~ geoip-database
+	#~ gnome-desktop3-data
+	#~ gvfs64
+	#~ gvfs-backends
+	#~ gvfs-common
+	#~ gvfs-daemons
+	#~ gvfs-fuse
+	#~ gvfs-libs64
 	i965-va-driver64
 	intel-media-va-driver64
-	lxde-settings-daemon
-	lxmenu-data
+	#~ lxde-settings-daemon
+	#~ lxmenu-data
 	javascript-common
 	ncurses-term
 	manpages
 	manpages-dev
 	mesa-va-drivers64
 	mesa-vdpau-drivers64
+	p7zip-full
 	poppler-data
 	poppler-utils
 	publicsuffix
 	sntp
 	va-driver-all64
 	vdpau-driver-all64
-	win32-loader
 	util-linux-locales
 	yelp
 	yelp-xsl

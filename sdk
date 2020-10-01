@@ -85,7 +85,7 @@ load() {
 	
 	case $choice in
 		1) release="beowulf"
-		   version="3.0.0-1"
+		   version="3.1.0"
 		   release_name="spock"		
 		   ;;
 		2) release="ascii"

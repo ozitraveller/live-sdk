@@ -135,10 +135,14 @@ bootstrap_config_thirdstage() {
 	)
 
 	cat << EOF | sudo tee $strapdir/thirdstage >/dev/null
-#!/bin/bash
+#!/bin/sh
+# change "bash" to "sh" to get logging. It's a BIG log!
+
 ## check if all our core, base and extra packages exist
 
 apt-get update
+
+## uncomment for logging
 allpkgs="\$(apt-cache search '.' | cut -d' ' -f1)"
 
 for i in ${full_list} ; do
@@ -156,17 +160,24 @@ done
 	exit 1
 }
 	
-notice "Installing the core packages..."
+echo "Installing the core packages..."
 DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${core_packages}
 
-notice "Installing the base packages..."
+echo "Installing the base packages..."
 DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${base_packages}
 
-notice "Installing the extra packages..."
+echo "Installing the extra packages..."
 DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${extra_packages}
 
-notice "Purge packages..."
-(( ${#purge_packages[*]} > 0 )) && apt-get --yes --force-yes purge ${purge_packages}
+echo "Purge packages..."
+# (( ${#purge_packages[*]} > 0 )) && apt-get --yes --force-yes purge ${purge_packages}
+
+# this seems to produce a small iso!
+	for _PACKAGE in ${purge_packages}
+	do
+		echo "REMOVE: \${_PACKAGE}"
+		apt-get --yes --force-yes purge "\${_PACKAGE}"
+	done
 
 apt-get --yes --force-yes autoremove
 apt-get clean

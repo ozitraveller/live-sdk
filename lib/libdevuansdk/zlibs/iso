@@ -101,7 +101,7 @@ EOF
 	notice "Building syslinux"
 	
 	cat <<EOF | sudo tee $workdir/env/build_syslinux
-#!/bin/bash
+#!/bin/sh
 cd /home/syslinux/${sources}
 var=\$(dpkg-checkbuilddeps 2>&1 | sed 's/[\(][^)]*[\)]//g')
 apt-get update && apt-get --yes --force-yes install \${var##*:}
