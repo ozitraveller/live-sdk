@@ -1,0 +1,17 @@
+clear
+
+# echo "  -----------------------------[ screen $STEP of $STEPS ]----------------------------
+echo "
+
+  DEVUAN RELEASE NOTES
+  -----------------------
+  This script will now execute the command:
+
+      Download and View Devuan Release Notes, to the HOME folder"
+
+if prompt "  Would you like to download the Release Notes file?"; then
+	wget -N https://files.devuan.org/devuan_beowulf/Release_notes.txt
+	
+	mousepad ~/Release_notes.txt
+
+fi

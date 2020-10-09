@@ -27,21 +27,10 @@ core_packages+=(
 
 base_packages+=(
 
-	base-files
-	lsb-release
-	lsb-base
-	adduser
 	user-setup
-	sudo
-	rpl
-	apt-utils
 	aptitude
 	nss-updatedb
 	parted
-	#~ console-setup
-	#~ console-data
-	locales
-	dselect
 	mawk
 	ntp
 	# os-prober
@@ -51,7 +40,6 @@ base_packages+=(
 	apt-listchanges
 	dnsutils
 	ftp
-	gnupg2
 	iw
 	# laptop-detect
 	reportbug
@@ -65,8 +53,6 @@ base_packages+=(
 	# libnl-genl-3-200
 	# libpcsclite1
 	# libuuid-perl
-	linux-base
-	# iw
 	wpasupplicant
 	iputils-ping
 	bind9-host
@@ -76,7 +62,6 @@ base_packages+=(
 	#~ fakeroot	
 	gawk
 	hwinfo
-	#~ win32-loader
 	wget
 	
 )
@@ -85,7 +70,7 @@ extra_packages+=(
 	
 	xorg
 	accountsservice
-	# apparmor
+	apparmor
 	upower
 	slim
 	pm-utils
@@ -200,8 +185,8 @@ extra_packages+=(
 	pmount
 	xarchiver
 	libnotify-bin
-	openssh-client
-	openssh-server
+	# openssh-client
+	# openssh-server
 	# haveged
 	galternatives
 	#~ libsox-fmt-all
@@ -229,10 +214,10 @@ purge_packages+=(
 	cups-common
 	debian-keyring
 	deselect
-	dhcpcd5
+	# dhcpcd5
 	dialog
-	dnsutils
-	dselect
+	# dnsutils
+	# dselect
 	elogind
 	enchant
 	evince
@@ -240,19 +225,19 @@ purge_packages+=(
 	firmware-misc-nonfree
 	fonts-droid-fallback
 	fonts-noto-mono
-	gdisk
-	#~ geoip-database
-	#~ gnome-desktop3-data
-	#~ gvfs64
-	#~ gvfs-backends
-	#~ gvfs-common
-	#~ gvfs-daemons
-	#~ gvfs-fuse
-	#~ gvfs-libs64
+	# gdisk
+	# geoip-database
+	# gnome-desktop3-data
+	# gvfs64
+	# gvfs-backends
+	# gvfs-common
+	# gvfs-daemons
+	# gvfs-fuse
+	# gvfs-libs64
 	i965-va-driver64
 	intel-media-va-driver64
-	#~ lxde-settings-daemon
-	#~ lxmenu-data
+	# lxde-settings-daemon
+	# lxmenu-data
 	javascript-common
 	ncurses-term
 	manpages
@@ -266,7 +251,7 @@ purge_packages+=(
 	sntp
 	va-driver-all64
 	vdpau-driver-all64
-	util-linux-locales
+	# util-linux-locales
 	yelp
 	yelp-xsl
 

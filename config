@@ -29,6 +29,8 @@ MAKEOPTS="-j$(grep -c 'processor' /proc/cpuinfo)"
 #~ mirror="http://$url$root"
 
 os="devuan"
+derivative="star"
+liveuser="starlive"
 url="deb.devuan.org"
 root="/merged"
 url_pkg=$url$root
@@ -70,7 +72,6 @@ base_packages+=(
 	openssh-server
 	openssh-client
 	console-setup
-	locales
 	console-data
 	dselect
 	rsync

@@ -98,8 +98,8 @@ ConfigureLiveUser ()
 {	
 	echo -n \" Live User\"	
 
-	groupadd $os
-	/usr/sbin/useradd --home /home/$os --create-home --gid $os $os
+	groupadd $liveuser
+	/usr/sbin/useradd --home /home/$os --create-home --gid $liveuser $liveuser
 
 	groups={
 
@@ -117,16 +117,16 @@ ConfigureLiveUser ()
 	}
 
 	for i in groups; do
-		usermod -a -G \$i $os
+		usermod -a -G \$i $liveuser
 	done
 
-	user_passwd_line=\$(awk -F':' '\$1 ~ /^${os}$/ { print \$0 }' /target/etc/passwd)
-	user_new_passwd_line=\$(awk -F':' '\$1 ~ /^${os}$/ { print \$1\"::\"\$3\":\"\$4\":\"\$5\":\"\$6\":\"\$7 }' /target/etc/passwd)
+	user_passwd_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$0 }' /target/etc/passwd)
+	user_new_passwd_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\"::\"\$3\":\"\$4\":\"\$5\":\"\$6\":\"\$7 }' /target/etc/passwd)
 
 	sed -i \"s/\${user_passwd_line}/\${user_new_passwd_line}/g\" /target/etc/passwd
 
-	user_shadow_line=\$(awk -F':' '\$1 ~ /^${os}$/ { print \$0 }' /target/etc/shadow)
-	user_new_shadow_line=\$(awk -F':' '\$1 ~ /^${os}$/ { print \$1\"::\"\$3\":\"\$4\":\"\$5\":\"\$6\":::\" }' /target/etc/shadow)
+	user_shadow_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$0 }' /target/etc/shadow)
+	user_new_shadow_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\"::\"\$3\":\"\$4\":\"\$5\":\"\$6\":::\" }' /target/etc/shadow)
 
 	sed -i \"s/\${user_shadow_line}/\${user_new_shadow_line}/g\" /target/etc/shadow
 
@@ -449,14 +449,22 @@ di_customize() {
 	cpio -id < ../initrd
 	gtkrc="$R/extra/common/devuan-installer/gtk-theme/gtkrc"
 	logo="$R/extra/common/devuan-installer/gtk-theme/logo-banner.png"
-	symlink="$workdir/d-i/tmp/usr/share/graphics/logo_installer.png"
+	symlink="$workdir/d-i/tmp/usr/share/graphics/logo_installer_darkpurpy.png"
+	symlink_dark="$workdir/d-i/tmp/usr/share/graphics/logo_installer_darkpurpy_dark.png"	
 	
-	[[ -f $gtkrc ]] && cp -av $gtkrc $workdir/d-i/tmp/usr/share/themes/Clearlooks/gtk-2.0/
+	[[ -f $gtkrc ]] && {
+		rm -f $workdir/d-i/tmp/usr/share/themes/Clearlooks/gtk-2.0/gtkrc
+		cp -av $gtkrc $workdir/d-i/tmp/usr/share/themes/Clearlooks/gtk-2.0/
+	}
 	
 	[[ -f $logo  ]] && {
 		[[ -f $symlink ]] && rm -f $symlink
-		cp -av $logo $workdir/d-i/tmp/usr/share/graphics/logo-banner_${release}.png
-		ln -s $workdir/d-i/tmp/usr/share/graphics/logo-banner_${release}.png $symlink
+		[[ -f $symlink_dark ]] && rm -f $symlink_dark
+		rm -f $workdir/d-i/tmp/usr/share/graphics/bright-banner-${release}.png
+		cp -av $logo $workdir/d-i/tmp/usr/share/graphics/bright-banner-${release}.png
+		ln -s $workdir/d-i/tmp/usr/share/graphics/bright-banner-${release}.png $symlink
+		ln -s $workdir/d-i/tmp/usr/share/graphics/bright-banner-${release}.png $symlink_dark
+
 	}
 	
 	find . | cpio --create --format='newc' > ../initrd
@@ -464,7 +472,7 @@ di_customize() {
 	gzip -f initrd
 	mv initrd.gz $workdir/binary/install/gtk/initrd.gz
 	popd
-	rm -rf $workdir/d-i/tmp	
+	# rm -rf $workdir/d-i/tmp	
 }
 
 di_win32-loader() {
@@ -475,7 +483,13 @@ di_win32-loader() {
 	
 	notice "Setting up win32-loader ..."
 
-	apt-get --yes --force-yes install win32-loader
+	cat <<EOF | sudo tee ${strapdir}/install-win32-loader
+#!/bin/sh
+apt-get update
+apt-get --yes --force-yes install win32-loader
+EOF
+	chroot-script -d install-win32-loader || zerr
+
 
 	sudo mv ${workdir}/binary ${strapdir}
 		
@@ -529,6 +543,13 @@ EOF
 
 	sudo mv ${strapdir}/binary ${workdir}
 	apt-get --yes --force-yes purge win32-loader	
+	cat <<EOF | sudo tee ${strapdir}/remove-win32-loader
+#!/bin/sh
+apt-get --yes --force-yes purge win32-loader
+apt-get --yes --force-yes autoremove
+apt-get clean
+EOF
+	chroot-script -d remove-win32-loader || zerr
 
 }
 
@@ -554,8 +575,8 @@ di_preseed_cfg() {
 d-i localechooser/supported-locales multiselect en_US.UTF-8
 
 ##
-# Change default hostname to ${os}
-d-i netcfg/get_hostname string ${os}
+# Change default hostname to ${derivative}
+d-i netcfg/get_hostname string ${derivative}
 d-i	netcfg/get_hostname	seen true
 ##
 
@@ -1099,7 +1120,7 @@ build_iso_dist() {
 	di_banudebs                         || { zerr; wrapup }	
 	di_debian_installer                 || { zerr; wrapup }
 	di_preseed_cfg                      || { zerr; wrapup }
-	##di_customize                        || { zerr; wrapup }
+	di_customize                        || { zerr; wrapup }
 	di_win32-loader         		    || { zerr; wrapup }
 	iso_syslinux                        || { zerr; wrapup }
 	iso_write_isolinux_cfg              || { zerr; wrapup }

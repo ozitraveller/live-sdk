@@ -170,7 +170,7 @@ do
 	select opt in "${STEPS_MAIN[@]}"; do
 	
 		case $opt in
-			"apt-update" | "apt-dist-upgrade" | "set-root-password")
+			"apt-update" | "apt-dist-upgrade" | "set-root-password" | "devuan-release-notes")
 				. "$LIBDIR/$opt"
 				break
 			;;

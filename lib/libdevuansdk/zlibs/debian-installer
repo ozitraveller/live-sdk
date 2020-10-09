@@ -226,6 +226,8 @@ apt-get source debian-installer
 apt-get clean
 EOF
 
+cat ${strapdir}/download_d-i
+
 	chroot-script -d download_d-i $workdir/env || zerr
 	
 	find $workdir/env/home/d-i -name "*.debian.tar.*" -exec rm -f {} \;
