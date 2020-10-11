@@ -220,13 +220,13 @@ cd /home/d-i
 apt-get update
 apt-get --yes --force-yes install locales dpkg-dev
 sed -e 's/# ${LANG}/${LANG}/' -i /etc/locale.gen
-locale-gen LANG=${LANG} LANGUAGE=${LANG} LC_CTYPE=${LANG} LC_ALL=${LANG}
+locale-gen LANG=${LANG} LANGUAGE=${LANGUAGE} LC_CTYPE=${LANG} LC_ALL=${LANG}
 source /etc/default/locale
 apt-get source debian-installer
 apt-get clean
 EOF
 
-cat ${strapdir}/download_d-i
+cat ${strapdir}/$workdir/env/download_d-i
 
 	chroot-script -d download_d-i $workdir/env || zerr
 	

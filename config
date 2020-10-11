@@ -29,6 +29,7 @@ MAKEOPTS="-j$(grep -c 'processor' /proc/cpuinfo)"
 #~ mirror="http://$url$root"
 
 os="devuan"
+# derivative=$os
 derivative="star"
 liveuser="starlive"
 url="deb.devuan.org"

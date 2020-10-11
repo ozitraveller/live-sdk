@@ -80,62 +80,66 @@ blend_postinst() {
 allowed_users=console
 needs_root_rights = no" > $strapdir/etc/X11/Xwrapper.config
 
-	echo \
-"#!/bin/sh
+	#~ echo \
+#~ "#!/bin/sh
 
-## live-config(7) - System Configuration Scripts
-## Copyright (C) 2006-2013 Daniel Baumann <daniel@debian.org>
-##
-## This program comes with ABSOLUTELY NO WARRANTY; for details see COPYING.
-## This is free software, and you are welcome to redistribute it
-## under certain conditions; see COPYING for details.
+#~ ## live-config(7) - System Configuration Scripts
+#~ ## Copyright (C) 2006-2013 Daniel Baumann <daniel@debian.org>
+#~ ##
+#~ ## This program comes with ABSOLUTELY NO WARRANTY; for details see COPYING.
+#~ ## This is free software, and you are welcome to redistribute it
+#~ ## under certain conditions; see COPYING for details.
 
-set -e
+#~ set -e
 
-# just a hack for the live-user setup under jessie
+#~ # just a hack for the live-user setup under jessie
 
-ConfigureLiveUser ()
-{	
-	echo -n \" Live User\"	
+#~ ConfigureLiveUser ()
+#~ {	
+	#~ echo -n \" Live User\"	
 
-	groupadd $liveuser
-	/usr/sbin/useradd --home /home/$os --create-home --gid $liveuser $liveuser
+	#~ groupadd $liveuser
+	#~ /usr/sbin/useradd --home /home/$liveuser --create-home --gid $liveuser $liveuser
 
-	groups={
+	#~ # https://wiki.debian.org/SystemGroups
+	#~ groups={
 
-		cdrom
-		floppy
-		audio
-		dip
-		sudo
-		video
-		plugdev
-		fuse
-		bluetooth
-		netdev
-		scanner
-	}
+		#~ audio
+		#~ cdrom
+		#~ floppy
+		#~ video
+		#~ sudo
+		#~ powerdev
+		#~ plugdev
+		#~ netdev
+		#~ fuse
+		#~ bluetooth
+		#~ scanner
+		#~ lp
+		#~ lpadmin
 
-	for i in groups; do
-		usermod -a -G \$i $liveuser
-	done
+	#~ }
 
-	user_passwd_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$0 }' /target/etc/passwd)
-	user_new_passwd_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\"::\"\$3\":\"\$4\":\"\$5\":\"\$6\":\"\$7 }' /target/etc/passwd)
+	#~ for i in groups; do
+		#~ usermod -a -G \$i $liveuser
+	#~ done
 
-	sed -i \"s/\${user_passwd_line}/\${user_new_passwd_line}/g\" /target/etc/passwd
+	#~ user_passwd_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$0 }' /target/etc/passwd)
+	#~ user_new_passwd_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\"::\"\$3\":\"\$4\":\"\$5\":\"\$6\":\"\$7 }' /target/etc/passwd)
 
-	user_shadow_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$0 }' /target/etc/shadow)
-	user_new_shadow_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\"::\"\$3\":\"\$4\":\"\$5\":\"\$6\":::\" }' /target/etc/shadow)
+	#~ sed -i \"s/\${user_passwd_line}/\${user_new_passwd_line}/g\" /target/etc/passwd
 
-	sed -i \"s/\${user_shadow_line}/\${user_new_shadow_line}/g\" /target/etc/shadow
+	#~ user_shadow_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$0 }' /target/etc/shadow)
+	#~ user_new_shadow_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\"::\"\$3\":\"\$4\":\"\$5\":\"\$6\":::\" }' /target/etc/shadow)
 
-}
+	#~ sed -i \"s/\${user_shadow_line}/\${user_new_shadow_line}/g\" /target/etc/shadow
 
-ConfigureLiveUser
-" > $strapdir/lib/live/config/1210-live-user-setup
+#~ }
 
-	chmod +x $strapdir/lib/live/config/1210-live-user-setup
+#~ ConfigureLiveUser
+#~ " > $strapdir/lib/live/config/1210-live-user-setup
+
+	#~ chmod +x $strapdir/lib/live/config/1210-live-user-setup
 	
 }
 
@@ -228,11 +232,11 @@ deb ${mirror} ${release}-backports ${section}
 # deb http://dl.google.com/linux/chrome/deb/ stable main 
 
 #### VirtualBox
-# deb http://download.virtualbox.org/virtualbox/debian/ ${release} contrib 
+# deb http://download.virtualbox.org/virtualbox/debian/ buster contrib 
 
 #### Docker
-# deb [arch=amd64] https://download.docker.com/linux/debian ${release} stable
-# deb-src [arch=amd64] https://download.docker.com/linux/debian ${release} stable
+# deb [arch=amd64] https://download.docker.com/linux/debian buster stable
+# deb-src [arch=amd64] https://download.docker.com/linux/debian buster stable
 
 ##############################################################
 # for beowulf or later
@@ -472,7 +476,7 @@ di_customize() {
 	gzip -f initrd
 	mv initrd.gz $workdir/binary/install/gtk/initrd.gz
 	popd
-	# rm -rf $workdir/d-i/tmp	
+	rm -rf $workdir/d-i/tmp	
 }
 
 di_win32-loader() {
