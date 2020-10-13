@@ -10,3 +10,5 @@ echo ""
 # update-alternatives --install /usr/bin/x-www-browser x-www-browser /usr/bin/firefox-esr 10
 update-alternatives --install /usr/bin/x-www-browser x-www-browser /usr/bin/star-web-apulse 99
 # update-alternatives --install /usr/bin/x-www-browser x-www-browser /usr/bin/epiphany-browser 10
+
+# xdg-settings set default-web-browser firefox.desktop

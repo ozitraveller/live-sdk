@@ -40,6 +40,7 @@ sleep 1
 	(sleep 3 && conky -c ~/.conkyrc) &
 	# nitrogen --restore &
 	# feh --bg-scale $HOME/images/wallpapers/shared/filename.jpg &
+	(sleep 2 && star-browser --firstrun) &
 	(sleep 6 && star-welcome --firstrun) &
 }
 

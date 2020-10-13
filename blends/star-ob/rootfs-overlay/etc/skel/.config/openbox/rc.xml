@@ -315,6 +315,7 @@
   </keybind>
    
     <!-- Keybindings for running applications -->
+<!--
     <keybind key="C-S-+">
       <action name="Execute">
         <startupnotify>
@@ -324,6 +325,7 @@
         <command>~/.config/dmenu/dmenu-bind.sh</command>
       </action>
     </keybind>
+-->
     <keybind key="C-S-j">
       <action name="Execute">
         <startupnotify>

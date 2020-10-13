@@ -1,0 +1,41 @@
+#!/bin/bash
+# Post installation script
+
+createFlag() {
+	if [ ! -d "/home/$USER/.config/star" ]; then
+		mkdir /home/$USER/.config/star
+	fi
+	if [ ! -f "/home/$USER/.config/star/star-browser" ]; then
+		touch /home/$USER/.config/star/star-browser
+	fi
+}
+
+startBrowser() {
+	echo "1"
+    gnome-www-browser /home/$USER/.local/share/star/star-info.html
+    exit 0
+}
+
+# First run
+if [[ $1 = '--firstrun' ]]; then
+	echo "firstrun"
+    if [[ -d /lib/live/mount/overlay || -e /home/$USER/.config/star/star-browser || ! $(groups) =~ ( |^)sudo( |$) ]]; then
+		echo "2"
+        exit 1
+    fi
+    startBrowser
+fi
+
+# Open in terminal
+if [[ $1 = '--open' ]]; then
+    startBrowser
+fi
+
+createFlag
+
+if ! [[ $(groups) =~ ( |^)sudo( |$) ]]; then
+	echo 'Error: must be a member of the sudo group to run this script.' # TODO 'root' user is not a member of the sudo group. Is it meant to restrict root from executing this script?
+	exit 1
+fi
+
+exit 0

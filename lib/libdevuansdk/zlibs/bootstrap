@@ -50,6 +50,7 @@ bootstrap_complete_base() {
 	notice "writing system configuration"
 	conf_print_hostname    | sudo tee $strapdir/etc/hostname             >/dev/null
 	conf_print_hosts       | sudo tee $strapdir/etc/hosts                >/dev/null
+	conf_print_netifaces   | sudo tee $strapdir/etc/network/interfaces   >/dev/null
 	conf_print_resolvconf  | sudo tee $strapdir/etc/resolv.conf          >/dev/null
 	conf_print_sourceslist | sudo tee $strapdir/etc/apt/sources.list     >/dev/null
 	conf_print_debconf     | sudo tee $strapdir/debconf.set              >/dev/null
@@ -135,7 +136,7 @@ bootstrap_config_thirdstage() {
 	)
 
 	cat << EOF | sudo tee $strapdir/thirdstage >/dev/null
-#!/bin/sh
+#!/bin/bash
 # change "bash" to "sh" to get logging. It's a BIG log!
 
 ## check if all our core, base and extra packages exist

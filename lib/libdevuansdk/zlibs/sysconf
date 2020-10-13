@@ -56,6 +56,24 @@ fe02::1          ip6-allrouters
 EOF
 }
 
+conf_print_netifaces() {
+	fn conf_print_netifaces "(override)"
+
+	cat <<EOF
+# interfaces(5) file used by ifup(8) and ifdown(8)
+
+# Please note that this file is written to be used with dhcpcd
+# For static IP, consult /etc/dhcpcd.conf and 'man dhcpcd.conf'
+
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# Include files from /etc/network/interfaces.d:
+# source /etc/network/interfaces.d/*
+
+EOF
+}
+
 conf_print_resolvconf() {
 	fn conf_print_resolvconf "(override)"
 

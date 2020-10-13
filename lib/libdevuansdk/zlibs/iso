@@ -161,9 +161,16 @@ iso_squash_strap() {
 	
 	# For unknown reasons, an empty file named 'Zero' is generated automaticaly at the root file "/" of strapdir:
 	[[ -f $strapdir/0 ]] && rm -f $strapdir/0
+
+	sudo nice -n 19 mksquashfs $strapdir binary/live/filesystem.squashfs \
+		-no-recovery -always-use-fragments -b 1048576 -comp xz ${=_compfilt} -Xdict-size 75% || zerr
+
+	#~ sudo mksquashfs $strapdir binary/live/filesystem.squashfs \
+		#~ -no-recovery -always-use-fragments -b 1M -comp xz -Xdict-size 1M || zerrtcs0tm
+		
 	
-	sudo mksquashfs $strapdir binary/live/filesystem.squashfs \
-		-comp xz ${=_compfilt} -noappend || zerr
+	#~ sudo mksquashfs $strapdir binary/live/filesystem.squashfs \
+		#~ -comp xz ${=_compfilt} -noappend || zerr
 
 	popd
 }

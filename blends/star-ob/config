@@ -33,6 +33,8 @@ base_packages+=(
 	parted
 	mawk
 	ntp
+	dialog
+	# locales-all
 	# os-prober
 	lsof
 	bash-completion
@@ -187,8 +189,9 @@ extra_packages+=(
 	libnotify-bin
 	# openssh-client
 	# openssh-server
-	# haveged
+	haveged
 	galternatives
+	# pyxdg
 	#~ libsox-fmt-all
 	#~ reiser4progs
 	#~ reiserfsprogs
@@ -214,10 +217,6 @@ purge_packages+=(
 	cups-common
 	debian-keyring
 	deselect
-	# dhcpcd5
-	dialog
-	# dnsutils
-	# dselect
 	elogind
 	enchant
 	evince
@@ -225,9 +224,6 @@ purge_packages+=(
 	firmware-misc-nonfree
 	fonts-droid-fallback
 	fonts-noto-mono
-	# gdisk
-	# geoip-database
-	# gnome-desktop3-data
 	# gvfs64
 	# gvfs-backends
 	# gvfs-common
@@ -236,8 +232,6 @@ purge_packages+=(
 	# gvfs-libs64
 	i965-va-driver64
 	intel-media-va-driver64
-	# lxde-settings-daemon
-	# lxmenu-data
 	javascript-common
 	ncurses-term
 	manpages
@@ -251,7 +245,6 @@ purge_packages+=(
 	sntp
 	va-driver-all64
 	vdpau-driver-all64
-	# util-linux-locales
 	yelp
 	yelp-xsl
 
