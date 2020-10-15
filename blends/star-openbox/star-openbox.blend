@@ -583,12 +583,12 @@ d-i preseed/late_command string \
 	sudo chmod -R 777 $workdir/binary	
 }
 
-di_banudebs(){
-	fn di_banudebs
+di_excludeudebs(){
+	fn di_excludeudebs
 	req=(workdir release abiname)
 	ckreq || return 1
 
-	notice "di_banudebs"
+	notice "di_excludeudebs"
 
 	pushd $workdir/debs
 
@@ -1104,8 +1104,9 @@ build_iso_dist() {
 	di_disk_info                        || { zerr; wrapup }
 	di_debmirror                        || { zerr; wrapup }
 	di_localudebs                       || { zerr; wrapup } 
-	di_reprepro                         || { zerr; wrapup }
 	di_banudebs                         || { zerr; wrapup }	
+	di_reprepro                         || { zerr; wrapup }
+	di_excludeudebs                     || { zerr; wrapup }		
 	di_debian_installer                 || { zerr; wrapup }
 	di_preseed_cfg                      || { zerr; wrapup }
 	di_customize                        || { zerr; wrapup }

@@ -90,7 +90,7 @@ di_localudebs () {
 }
 
 di_banudebs () {
-	fn di_banudebs #"(override)"
+	fn di_banudebs
 	req=(workdir release)
 	ckreq || return 1
 	

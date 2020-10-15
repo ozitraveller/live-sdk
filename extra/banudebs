@@ -4,12 +4,9 @@ apt-setup-udeb
 choose-init
 choose-mirror_
 choose-mirror-bin
-reiserfsprogs-udeb
-espeak
-espeakup
 #net-retriever
 #ethdetect
-debian-edu-install-udeb
+#debian-edu-install-udeb
 #netcfg_
 #netcfg-static
 #ppp-udeb
