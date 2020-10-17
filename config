@@ -23,20 +23,13 @@
 
 MAKEOPTS="-j$(grep -c 'processor' /proc/cpuinfo)"
 
-#~ os="devuan"
-#~ url="deb.devuan.org"
-#~ root="/merged"
-#~ mirror="http://$url$root"
-
 os="devuan"
+url="deb.devuan.org"
+root="/merged"
+mirror="http://$url$root"
 # derivative=$os
 derivative="star"
 liveuser="starlive"
-url="deb.devuan.org"
-root="/merged"
-url_pkg=$url$root
-url_di=$url_pkg
-mirror="http://$url_pkg"
 
 release_name="spock"
 
@@ -52,6 +45,9 @@ core_packages+=(
 	sysvinit
 	sysvinit-core
 	sysvinit-utils
+	# tasksel
+	# tasksel-data
+	# laptop-detect
 	
 )
 
@@ -72,8 +68,11 @@ base_packages+=(
 	util-linux-locales
 	openssh-server
 	openssh-client
+	# task-ssh-server
 	console-setup
 	console-data
+	isc-dhcp-client
+	isc-dhcp-common
 	dselect
 	rsync
 	gnupg2

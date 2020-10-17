@@ -1104,7 +1104,6 @@ build_iso_dist() {
 	di_disk_info                        || { zerr; wrapup }
 	di_debmirror                        || { zerr; wrapup }
 	di_localudebs                       || { zerr; wrapup } 
-	di_banudebs                         || { zerr; wrapup }	
 	di_reprepro                         || { zerr; wrapup }
 	di_excludeudebs                     || { zerr; wrapup }		
 	di_debian_installer                 || { zerr; wrapup }

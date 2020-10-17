@@ -30,6 +30,7 @@ iso_prepare_strap() {
 
 	cat <<EOF | sudo tee ${strapdir}/isoprep >/dev/null
 #!/bin/sh
+source /etc/default/locale
 apt-get update
 apt-get --yes --force-yes install dialog live-boot live-config live-tools live-config-sysvinit live-boot-initramfs-tools
 apt-get --yes --force-yes autoremove
@@ -349,8 +350,8 @@ EOF
 	cp $efi_dir/$efi_pkg/usr/lib/grub/$arch_efi/*.mod $binary/boot/grub/$arch_efi/
 	cp $efi_dir/$efi_pkg/usr/lib/grub/$arch_efi/*.lst $binary/boot/grub/$arch_efi/
 	
-	# Delete some modules
-	list=$R/extra/banmods
+	# Exclude some modules
+	list=$R/extra/efi-modules/exclude
 	for line in $(cat $list); do
 		rm -f $binary/boot/grub/$arch_efi/${line}.mod
 	done

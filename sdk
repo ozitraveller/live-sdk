@@ -49,7 +49,39 @@ load() {
 	fn load "$@"
 	req=()
 	ckreq || return 1
-
+	
+	if [ -x /usr/bin/dialog ] ; then
+		dialog \
+			--backtitle "Operating System Selection" \
+			--radiolist "Choose the operating system:" 10 40 4 \
+				1 Devuan on \
+				2 Gnuinos off \
+				3 Debian off 2>/tmp/live-sdk_$$
+		choice=$(cat /tmp/live-sdk_$$)
+	
+		root="/merged"	
+		case $choice in
+			1)  os="devuan"
+				url_pkg=$url$root
+				url_di=$url_pkg
+				mirror="http://"$url_pkg
+				;;
+			2) 	os="gnuinos"
+				url="packages.gnuinos.org"
+				mirror="http://"$url$root
+				;;
+			3) 	os="debian"
+				mirror="http://deb.debian.org/debian"
+				;;
+			*) error "invalid os specified"; zerr;;
+		esac
+		rm -f /tmp/live-sdk_$$
+	
+	else
+		echo "'dialog' needs package dialog, which is not installed." >&2
+		exit 1
+	fi
+	
 	var=`find $R/blends -name "*.blend"`
 	echo "${var}" > /tmp/list_$$
 	
@@ -74,7 +106,7 @@ load() {
                  "${blendmap[@]}" 3>&1 1>&2 2>&3 )
                  
 	blendlib=`sed "${blend}q;d" /tmp/list_$$`
-		
+	echo "blend: ${blend}"
 	dialog \
 		--backtitle "Release Selection" \
 		--radiolist "Choose the release:" 10 40 4 \
@@ -149,14 +181,7 @@ load() {
 	
 	case $arch in
 		amd64) 	line=`grep "^Filename: " Packages | awk "/Filename: / { print $2 }" | grep "kernel-image" | sort -r | head -n 1`
-		
-				# line=`grep "^Filename: " Packages | awk "/Filename: / { print $2 }" | grep "kernel-image" | sort -r | head -n 1`
-		
-				#~ line=`grep "^Filename: pool/" Packages | grep "main/l/linux" \
-				#	| grep "/kernel-image" | sort -r | head  -n 1 | grep "amd64-di_" | grep "_amd64.udeb"`
 
-				#~ line=`grep "^Filename: pool/" Packages | grep "main/l/linux" \
-					#~ | grep "/kernel-image" | grep "amd64-di_" | grep "_amd64.udeb$"`
 				flavor="amd64"
 				earch=$flavor
 				;;

@@ -38,13 +38,6 @@ di_debmirror () {
 	
 	rm -rf $workdir/repo-$release
 
-echo "###############################"
-echo "# url: ${url}"		
-echo "# release: ${release}"		
-echo "# root: ${root}"		
-echo "# arch: ${arch}"		
-echo "###############################"
-
 	debmirror -h $url \
 		--dist=$release \
 		--root=$root \
@@ -70,11 +63,11 @@ di_localudebs () {
 	rm -rf $workdir/tmp_repo-$release	
 	cp -a $workdir/repo-$release $workdir/tmp_repo-$release
 	
-	if [ -d $R/extra/custom-udebs/$release ]; then
+	if [ -d $R/extra/debian-installer/custom/$release ]; then
 	
-		list="${workdir}/custom_udebs_list"
-		var1=`find $R/extra/custom-udebs/$release -name "*_$arch.udeb"`
-		var2=`find $R/extra/custom-udebs/$release -name "*_all.udeb"`
+		local list="${workdir}/custom_udebs_list"
+		var1=`find $R/extra/debian-installer/custom/$release -name "*_$arch.udeb"`
+		var2=`find $R/extra/debian-installer/custom/$release -name "*_all.udeb"`
 		echo "${var1}\n${var2}" > $list
 	
 		for line in $(cat $list); do
@@ -87,21 +80,6 @@ di_localudebs () {
 	
 		rm -f $workdir/custom_udebs_list
 	fi
-}
-
-di_banudebs () {
-	fn di_banudebs
-	req=(workdir release)
-	ckreq || return 1
-	
-	notice "di_banudebs - ${PWD}"
-	
-	list=$R/extra/banudebs
-	for line in $(cat $list); do
-		pkg_name=${line##*/}
-		var=`find $workdir/tmp_repo-$release/ -name "*${pkg_name}*.udeb"`
-		rm -f $var
-	done
 }
 
 di_reprepro () {
@@ -171,7 +149,7 @@ UDebIndices: Packages Release . .gz " > $workdir/binary/conf/distributions
 		wget $mirror/`echo $pkg | cut -d' ' -f2`
  	done
 	
-	source $R/extra/reprepro_list
+	source $R/extra/debian-installer/reprepro_list
 	
 	pushd $workdir/binary
 
@@ -220,13 +198,11 @@ cd /home/d-i
 apt-get update
 apt-get --yes --force-yes install locales dpkg-dev
 sed -e 's/# ${LANG}/${LANG}/' -i /etc/locale.gen
-locale-gen LANG=${LANG} LANGUAGE=${LANGUAGE} LC_CTYPE=${LANG} LC_ALL=${LANG}
+locale-gen LANG=${LANG} LANGUAGE=${LANG} LC_CTYPE=${LANG} LC_ALL=${LANG}
 source /etc/default/locale
 apt-get source debian-installer
 apt-get clean
 EOF
-
-cat ${strapdir}/$workdir/env/download_d-i
 
 	chroot-script -d download_d-i $workdir/env || zerr
 	
@@ -273,10 +249,14 @@ cat ${strapdir}/$workdir/env/download_d-i
 		
 	notice "Building debian-installer"
 	
-	list=$R/extra/di_extradeps
+	local list=$R/extra/di_extradeps
 	for line in $(cat $list); do
 		_extra_deps+="${line##*/} "
 	done
+	
+	cp -av $R/extra/debian-installer/pkg-lists/base $workdir/env/home/d-i/${sources}/build/pkg-lists/
+	cp -av $R/extra/debian-installer/pkg-lists/gtk-common $workdir/env/home/d-i/${sources}/build/pkg-lists/
+	cp -av $R/extra/debian-installer/pkg-lists/exclude $workdir/env/home/d-i/${sources}/build/pkg-lists/
 
 	cat <<EOF | sudo tee $workdir/env/build_d-i
 #!/bin/sh

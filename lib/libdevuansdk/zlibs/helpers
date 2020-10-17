@@ -64,7 +64,6 @@ build_iso_dist() {
 	di_disk_info                        || { zerr; wrapup }
 	di_debmirror                        || { zerr; wrapup }
 	di_localudebs                       || { zerr; wrapup }
-	di_banudebs                         || { zerr; wrapup }
 	di_reprepro                         || { zerr; wrapup }
 	di_debian_installer                 || { zerr; wrapup }
 	di_preseed_cfg                      || { zerr; wrapup }
@@ -340,7 +339,7 @@ chroot-script() {
 
 			## logging
 			sudo sed -i "$chrootdir/$script" \
-				-e 's@#!/bin/sh@#!/bin/sh\'$'\nset -x ; exec 2>/'$script'.log ; export DEBIAN_FRONTEND=noninteractive@'
+				-e 's@#!/bin/sh@#!/bin/sh\'$'\nset -x ; exec 2>/'$script'.log ; export LC_ALL="C.UTF-8"; export DEBIAN_FRONTEND=noninteractive@'
 
 			notice "chrooting to execute $script..."
 			sudo chmod +x  "$chrootdir/$script"    || zerr

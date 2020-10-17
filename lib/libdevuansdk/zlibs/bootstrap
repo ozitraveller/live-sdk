@@ -160,7 +160,9 @@ done
 	printf "%s\n" "\$missing"
 	exit 1
 }
-	
+
+source /etc/default/locale
+
 echo "Installing the core packages..."
 DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${core_packages}
 
@@ -168,7 +170,7 @@ echo "Installing the base packages..."
 DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${base_packages}
 
 echo "Installing the extra packages..."
-DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${extra_packages}
+(( ${#extra_packages[*]} > 0 )) && DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${extra_packages}
 
 echo "Purge packages..."
 # (( ${#purge_packages[*]} > 0 )) && apt-get --yes --force-yes purge ${purge_packages}

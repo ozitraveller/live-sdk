@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-# star-ob.blend
+# star-openbox.blend
 
 core_packages+=(
 	
@@ -12,8 +12,8 @@ core_packages+=(
 	ntfs-3g
 	xfsprogs
 	xfsdump 
-	reiserfsprogs 
-	reiser4progs 
+	# reiserfsprogs 
+	# reiser4progs 
 	jfsutils 		
 	gpart
 	less
@@ -29,15 +29,13 @@ base_packages+=(
 
 	user-setup
 	aptitude
-	nss-updatedb
-	parted
+	# nss-updatedb
+	# parted
 	mawk
 	ntp
 	dialog
 	# locales-all
 	# os-prober
-	lsof
-	bash-completion
 	# acpi-support-base
 	apt-listchanges
 	dnsutils
@@ -88,16 +86,11 @@ extra_packages+=(
 	tzdata
 	unrar
 	unzip
-	unace
-	unalz
 	lzop
-	arj
 	zip
 	xz-utils
 	gzip
-	rzip
 	rpl
-	libxss1
 	logrotate
 	mpg321
 	gstreamer1.0-plugins-base
@@ -187,16 +180,16 @@ extra_packages+=(
 	pmount
 	xarchiver
 	libnotify-bin
-	# openssh-client
-	# openssh-server
 	haveged
 	galternatives
-	# pyxdg
 	#~ libsox-fmt-all
-	#~ reiser4progs
-	#~ reiserfsprogs
-	#~ sysvinit
 
+)
+
+[[ $os = "gnuinos" ]] && core_packages+=(
+
+	gnuinos-keyring
+	
 )
 
 purge_packages+=(
