@@ -4,16 +4,15 @@
 core_packages+=(
 	
 	e2fsprogs
-	# gettext-base
-	#~ btrfs-progs
+	btrfs-progs
 	nfs-common
 	dosfstools
 	mtools
 	ntfs-3g
 	xfsprogs
 	xfsdump 
-	# reiserfsprogs 
-	# reiser4progs 
+	reiserfsprogs 
+	reiser4progs 
 	jfsutils 		
 	gpart
 	less
@@ -29,12 +28,9 @@ base_packages+=(
 
 	user-setup
 	aptitude
-	# nss-updatedb
-	# parted
 	mawk
 	ntp
 	dialog
-	# locales-all
 	# os-prober
 	# acpi-support-base
 	apt-listchanges
@@ -45,21 +41,14 @@ base_packages+=(
 	reportbug
 	usbutils
 	whois
-	# gettext-base
 	dhcpcd5
 	net-tools
 	psmisc
-	# libnl-3-200
-	# libnl-genl-3-200
-	# libpcsclite1
-	# libuuid-perl
 	wpasupplicant
 	iputils-ping
 	bind9-host
 	traceroute
 	ethtool
-	#~ build-essential
-	#~ fakeroot	
 	gawk
 	hwinfo
 	wget

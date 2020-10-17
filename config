@@ -45,9 +45,6 @@ core_packages+=(
 	sysvinit
 	sysvinit-core
 	sysvinit-utils
-	# tasksel
-	# tasksel-data
-	# laptop-detect
 	
 )
 
@@ -68,7 +65,6 @@ base_packages+=(
 	util-linux-locales
 	openssh-server
 	openssh-client
-	# task-ssh-server
 	console-setup
 	console-data
 	isc-dhcp-client
