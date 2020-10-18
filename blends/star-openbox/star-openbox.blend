@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-# star-ob.blend
+# star-openbox.blend
 
 
 BLENDPATH="${BLENDPATH:-$(dirname $0)}"

@@ -1,0 +1,271 @@
+#!/usr/bin/env zsh
+# star-fluxbox.blend
+
+core_packages+=(
+	
+	e2fsprogs
+	btrfs-progs
+	nfs-common
+	dosfstools
+	mtools
+	ntfs-3g
+	xfsprogs
+	xfsdump 
+	reiserfsprogs 
+	reiser4progs 
+	jfsutils 		
+	gpart
+	less
+	nano
+	curl
+	live-tools
+	eject
+	file
+	
+)
+
+base_packages+=(
+
+	user-setup
+	aptitude
+	mawk
+	ntp
+	dialog
+	# os-prober
+	# acpi-support-base
+	apt-listchanges
+	dnsutils
+	ftp
+	iw
+	# laptop-detect
+	reportbug
+	usbutils
+	whois
+	dhcpcd5
+	net-tools
+	psmisc
+	wpasupplicant
+	iputils-ping
+	bind9-host
+	traceroute
+	ethtool
+	gawk
+	hwinfo
+	wget
+	
+)
+
+extra_packages+=(	
+	
+	xorg
+	accountsservice
+	apparmor
+	upower
+	slim
+	pm-utils
+	hwdata
+	xdg-user-dirs
+	xdg-utils
+	alsa-utils
+	apulse
+	rtkit
+	tasksel
+	gamin
+	cpufrequtils
+	tzdata
+	unrar
+	unzip
+	lzop
+	zip
+	xz-utils
+	gzip
+	rpl
+	logrotate
+	mpg321
+	gstreamer1.0-plugins-base
+	gstreamer1.0-plugins-good 
+	gstreamer1.0-plugins-bad
+	gstreamer1.0-plugins-ugly
+	gstreamer1.0-alsa
+	gir1.2-gst-plugins-base-1.0
+	gir1.2-gstreamer-1.0
+	libpolkit-gobject-consolekit-1-0
+	libpolkit-backend-consolekit-1-0
+	libpolkit-backend-1-0
+	consolekit
+	policykit-1
+	policykit-1-gnome
+	rfkill
+	usbutils
+	localepurge
+	xserver-xorg-video-all
+	intel-microcode
+	amd64-microcode
+	iucode-tool
+	firmware-zd1211
+	firmware-netxen
+	firmware-ralink 
+	firmware-iwlwifi
+	firmware-intelwimax 
+	firmware-brcm80211
+	firmware-realtek
+	firmware-atheros
+	firmware-libertas
+	firmware-bnx2
+	firmware-b43-installer 
+	firmware-b43legacy-installer 
+	b43-fwcutter 
+	mobile-broadband-provider-info 	
+	wireless-tools
+	lsb-release
+	wmctrl
+	apt-transport-https
+	desktop-base
+	bash-completion
+	ttf-dejavu 
+	fonts-liberation 
+	fontconfig-config 
+	dmz-cursor-theme
+	gtk2-engines-murrine 
+	gtk2-engines-pixbuf
+	hdparm 
+	disk-manager 
+	ufw 
+	gparted  
+	htop
+	hardinfo 
+	synaptic
+	i3lock
+	suckless-tools 
+	epiphany-browser
+	conky-all 
+	scrot
+	xpdf
+	xterm
+	ncdu
+	pciutils
+	task-english
+	# kexec-tools
+	fluxbox
+	tint2
+	dunst
+	connman
+	connman-ui
+	hsetroot
+	arandr
+	lxappearance
+	lxterminal
+	mirage
+	mousepad
+	pcmanfm
+	libfm-modules
+	lsof
+	# spacefm
+	# udevil
+	yad
+	mpv
+	pmount
+	xarchiver
+	libnotify-bin
+	haveged
+	galternatives
+	#~ libsox-fmt-all
+
+)
+
+extra_packages+=(	
+	
+	fluxbox
+
+)
+
+[[ $os = "gnuinos" ]] && core_packages+=(
+
+	gnuinos-keyring
+	
+)
+
+purge_packages+=(
+
+	lm-sensors
+	obsession
+	ofono
+	aptitude
+	aptitude-common
+	avahi-daemon
+	bluez
+	console-common
+	console-data
+	console-setup
+	console-setup-linux
+	cups-bsd
+	cups-client
+	cups-common
+	debian-keyring
+	deselect
+	elogind
+	enchant
+	evince
+	firmware-linux-free
+	firmware-misc-nonfree
+	fonts-droid-fallback
+	fonts-noto-mono
+	# gvfs64
+	# gvfs-backends
+	# gvfs-common
+	# gvfs-daemons
+	# gvfs-fuse
+	# gvfs-libs64
+	i965-va-driver64
+	intel-media-va-driver64
+	javascript-common
+	ncurses-term
+	manpages
+	manpages-dev
+	mesa-va-drivers64
+	mesa-vdpau-drivers64
+	p7zip-full
+	poppler-data
+	poppler-utils
+	publicsuffix
+	sntp
+	va-driver-all64
+	vdpau-driver-all64
+	yelp
+	yelp-xsl
+
+)	
+
+
+#~ [[ ($os = "gnuinos") && ($release = "jessie") ]] && extra_packages+=(
+
+	#~ yad
+	#~ # simplescreenrecorder
+	#~ tar
+	#~ ffmpeg
+	
+#~ )
+
+[[ ($release = "jessie") || ($release = "ascii") ]] && extra_packages+=(
+
+ 	gksu
+		
+)
+
+#~ [[ ($release = "ascii") || ($release = "beowulf") ]] && extra_packages+=(
+
+	#~ elogind
+	#~ xserver-xorg-legacy
+	#~ libpam-elogind
+	
+#~ )
+
+
+#~ [[ ($release = "beowulf") || ($release = "chimaera") ]] && extra_packages+=(
+
+	#~ # otter-browser
+	#~ cinnabar-icon-theme
+	#~ clearlooks-phenix-cinnabar-theme
+	
+#~ )
+

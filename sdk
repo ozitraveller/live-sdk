@@ -32,6 +32,7 @@ vars+=(R workdir strapdir)
 vars+=(os oslib blendlib)
 vars+=(MAKEOPTS)
 vars+=(release_name)
+vars+=(blendtype)
 
 ## global arrs
 arrs+=(extra_packages)

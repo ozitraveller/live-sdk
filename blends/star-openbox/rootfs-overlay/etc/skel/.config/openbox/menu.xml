@@ -240,7 +240,7 @@
 					</command>
 				</action>
 			</item>
-			
+<!--			
 			<item label="Alternatives Configurator">
 				<action name="Execute">
 					<command>
@@ -248,7 +248,7 @@
 					</command>
 				</action>
 			</item>
-<!--
+
 			<item label="LxTask Manager">
 				<action name="Execute">
 					<command>

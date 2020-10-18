@@ -32,6 +32,7 @@ derivative="star"
 liveuser="starlive"
 
 release_name="spock"
+blendtype="jwm"
 
 ## common packages for all images
 core_packages+=(
