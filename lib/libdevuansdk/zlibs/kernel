@@ -35,7 +35,7 @@ build_kernel_${arch}() {
 
 	cat <<EOF | sudo tee ${strapdir}/install-linux
 #!/bin/sh
-source /etc/default/locale
+. /etc/default/locale
 apt-get update
 allpkgs="\$(apt-cache search '.' | cut -d' ' -f1)"
 

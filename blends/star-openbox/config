@@ -3,21 +3,17 @@
 
 core_packages+=(
 	
-	e2fsprogs
 	btrfs-progs
+	reiserfsprogs 
+	reiser4progs
 	nfs-common
 	dosfstools
 	mtools
 	ntfs-3g
 	xfsprogs
 	xfsdump 
-	reiserfsprogs 
-	reiser4progs 
-	jfsutils 		
+ 	jfsutils 		
 	gpart
-	less
-	nano
-	curl
 	live-tools
 	eject
 	file
@@ -35,23 +31,23 @@ base_packages+=(
 	# acpi-support-base
 	apt-listchanges
 	dnsutils
-	ftp
+	# ftp
 	iw
 	# laptop-detect
-	reportbug
+# 	reportbug
 	usbutils
 	whois
-	dhcpcd5
 	net-tools
 	psmisc
 	wpasupplicant
 	iputils-ping
 	bind9-host
 	traceroute
-	ethtool
+# 	ethtool
 	gawk
 	hwinfo
 	wget
+	gettext-base
 	
 )
 
@@ -146,10 +142,6 @@ extra_packages+=(
 	pciutils
 	task-english
 	# kexec-tools
-	openbox
-	obconf
-	obmenu
-	tint2
 	dunst
 	connman
 	connman-ui
@@ -169,9 +161,20 @@ extra_packages+=(
 	pmount
 	xarchiver
 	libnotify-bin
-	haveged
-	galternatives
-	#~ libsox-fmt-all
+	# haveged
+	# galternatives
+	# libsox-fmt-all
+	# inxi
+	# linux-headers-${arch}
+
+)
+
+extra_packages+=(	
+	
+	openbox
+	obconf
+	obmenu
+	tint2
 
 )
 
@@ -190,15 +193,15 @@ purge_packages+=(
 	aptitude-common
 	avahi-daemon
 	bluez
-	console-common
-	console-data
-	console-setup
-	console-setup-linux
+#	console-common
+#	console-data
+#	console-setup
+#	console-setup-linux
 	cups-bsd
 	cups-client
 	cups-common
 	debian-keyring
-	deselect
+#	deselect
 	elogind
 	enchant
 	evince

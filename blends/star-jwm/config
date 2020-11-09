@@ -1,23 +1,19 @@
 #!/usr/bin/env zsh
-# star-openbox.blend
+# star-jwm.blend
 
 core_packages+=(
 	
-	e2fsprogs
-	btrfs-progs
+	# btrfs-progs
+	# reiserfsprogs 
+	# reiser4progs
 	nfs-common
 	dosfstools
 	mtools
 	ntfs-3g
 	xfsprogs
 	xfsdump 
-	reiserfsprogs 
-	reiser4progs 
 	jfsutils 		
 	gpart
-	less
-	nano
-	curl
 	live-tools
 	eject
 	file
@@ -146,7 +142,6 @@ extra_packages+=(
 	pciutils
 	task-english
 	# kexec-tools
-	jwm
 	dunst
 	connman
 	connman-ui
@@ -168,7 +163,14 @@ extra_packages+=(
 	libnotify-bin
 	haveged
 	galternatives
-	#~ libsox-fmt-all
+	# libsox-fmt-all
+	inxi
+	
+)
+
+extra_packages+=(	
+	
+	jwm
 
 )
 

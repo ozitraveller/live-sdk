@@ -22,12 +22,12 @@ ConfigureNetworkInterfaces ()
 source /etc/network/interfaces.d/*
 
 # The loopback network interface
-auto lo
-iface lo inet loopback
+#~ auto lo
+#~ iface lo inet loopback
 
-iface eth0 inet dhcp
+#~ iface eth0 inet dhcp
 
-iface wlan0 inet dhcp" > /etc/network/interfaces
+#~ iface wlan0 inet dhcp" > /etc/network/interfaces
 
 }
 

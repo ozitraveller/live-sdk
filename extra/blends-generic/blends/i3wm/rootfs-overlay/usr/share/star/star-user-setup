@@ -19,6 +19,9 @@ if [ ! -f /home/"${USER}"/.config/star/star-setup ]; then
     if [ -f /etc/apt/sources.list.d/zz-sources.list ]; then
         rm -f /etc/apt/sources.list.d/zz-sources.list
     fi
+    if [ -f /home/"${USER}"/.conkyrc ]; then
+        rm -f /home/"${USER}"/.conkyrc
+    fi
     if [ -f /home/"${USER}"/.gtkrc-2.0 ]; then
         sed -i "s/REPLACEME/${USER}/g" /home/"${USER}"/.gtkrc-2.0 > /dev/null 2>&1
     fi

@@ -8,26 +8,10 @@ source $BLENDPATH/config
 
 blend_preinst() {
 	fn blend_preinst
-	req=(strapdir blend release)
+	req=(strapdir blendname release)
 	ckreq || return 1
 
-	notice "executing $blend preinst"
-
-	cat <<EOF | sudo tee ${strapdir}/set-default-locale >/dev/null
-#!/bin/sh
-
-# https://serverfault.com/questions/362903/how-do-you-set-a-locale-non-interactively-on-debian-ubuntu
-
-echo LANG=${LANG} LANGUAGE=${LANGUAGE} \
-sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-# sed -e 's/# ${LANG}/${LANG}/' -i /etc/locale.gen \
-locale-gen LANG=${LANG} LANGUAGE=${LANGUAGE} LC_CTYPE=${LANG} LC_ALL=${LANG} \	
-dpkg-reconfigure --frontend=noninteractive locales && \
-update-locale LANG=en_US.UTF-8
-
-EOF
-
-	chroot-script set-default-locale || zerr
+	notice "executing ${blendname##*/} preinst"
 
 }
 
@@ -47,6 +31,10 @@ blend_postinst() {
 	cp -rf $R/extra/common/rootfs-overlay/* $workdir/blend
 	cp -rf $BLENDPATH/rootfs-overlay/* $workdir/blend
 	
+	if [[ $section == *"generic"* ]]; then 
+		cp -rf $BLENDPATH/blends/$blendtype/rootfs-overlay/* $workdir/blend
+	fi
+	
 	notice "Copying system hooks"
 	cp -rf $R/extra/common/hooks/normal/* $workdir/blend/hooks
 	
@@ -59,7 +47,6 @@ blend_postinst() {
 	# Remove lines in blank:
 	cat $workdir/tmp_$$ | sed '/^ *$/d' > $workdir/dirs_$$
 
-	#~ mkdir -p mnt
 	for i in $(cat $workdir/dirs_$$); do
 		mkdir -p $strapdir/$i
 		if [ -d $workdir/blend/$i ] ; then 
@@ -74,10 +61,89 @@ blend_postinst() {
 		[[ ${line##*/} != "bin" ]] && chmod -R 655 $strapdir/usr/bin/${line##*/}
 	done
 
-	for line in `find $blendname/rootfs-overlay/lib/live/config -name "*"`; do
+	if [ -d $blendname/rootfs-overlay/lib/live/config ] ; then 
+		for line in `find $blendname/rootfs-overlay/lib/live/config -name "*"`; do
+			[[ ${line##*/} != "config" ]] && chmod -R 700 $strapdir/lib/live/config/${line##*/}
+		done
+	fi
+
+	for line in `find $R/extra/common/rootfs-overlay/lib/live/config -name "*"`; do
 		[[ ${line##*/} != "config" ]] && chmod -R 700 $strapdir/lib/live/config/${line##*/}
-	done	
-			
+	done
+
+
+notice "build_type=#####"
+
+	echo \
+"#!/bin/sh
+
+set -e
+
+# just a hack for the live-user setup under jessie
+
+ConfigureLiveUser ()
+{
+echo -n \" Live User\"
+" > $strapdir/lib/live/config/1220-live-user-setup
+
+	if [[ build_type=="source" ]]; then 
+	
+	notice "build_type=source"
+
+	echo \
+"
+groupadd $liveuser
+/usr/sbin/useradd --home /home/$os --create-home --gid $liveuser $liveuser
+
+" >> $strapdir/lib/live/config/1220-live-user-setup
+
+	fi
+
+	echo \
+"
+
+groups={
+
+cdrom
+floppy
+audio
+dip
+sudo
+video
+plugdev
+fuse
+bluetooth
+netdev
+scanner
+}
+
+for i in groups; do
+usermod -a -G \$i $liveuser
+done
+
+# groups=\"cdrom floppy audio dip sudo video plugdev bluetooth netdev scanner\"
+
+# for i in \$groups; do
+# usermod -a -G \$i $liveuser
+# done
+
+user_passwd_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\":\"\$2\":\" }' /target/etc/passwd)
+user_new_passwd_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\"::\" }' /target/etc/passwd)
+
+sed -i \"s/^\${user_passwd_line}/\${user_new_passwd_line}/g\" /target/etc/passwd
+
+user_shadow_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\":\"\$2\":\" }' /target/etc/shadow)
+user_new_shadow_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\"::\" }' /target/etc/shadow)
+
+sed -i \"s/^\${user_shadow_line}/\${user_new_shadow_line}/g\" /target/etc/shadow
+
+}
+
+ConfigureLiveUser
+" >> $strapdir/lib/live/config/1220-live-user-setup
+
+sudo chmod -R 700 $strapdir/lib/live/config/1220-live-user-setup
+
 	echo \
 "# Xwrapper.config (Debian X Window System server wrapper configuration file)
 #
@@ -93,14 +159,15 @@ blend_postinst() {
 # If you have edited this file but would like it to be automatically updated
 # again, run the following command as root:
 #   dpkg-reconfigure xserver-xorg-legacy
-allowed_users=console
-needs_root_rights = no" > $strapdir/etc/X11/Xwrapper.config
+allowed_users=anybody
+needs_root_rights = no
+" > $strapdir/etc/X11/Xwrapper.config
 
 }
 
 blend_finalize() {
 	fn blend_finalize
-	req=(R strapdir os url root release blendname section)
+	req=(R strapdir os url root blendname section)
 	ckreq || return 1
 
 	notice "executing $blend finalize"
@@ -108,6 +175,11 @@ blend_finalize() {
 	#cp -av $R/blends/$blend/dselect/pkglist.txt                    $strapdir/tmp/
 	
 	sed -i '12i Defaults    env_reset , timestamp_timeout = 0' $strapdir/etc/sudoers	
+
+	# Remove possible replicated lines from sudoers:
+	uniq $strapdir/etc/sudoers /tmp/sudoers_$$
+	rm -f $strapdir/etc/sudoers
+	mv /tmp/sudoers_$$ $strapdir/etc/sudoers 
 
 	echo \
 "127.0.0.1       ${os}                localhost
@@ -126,24 +198,31 @@ rm -f /etc/apt/sources.list~
 rm -f /etc/apt/trusted.gpg~
 rm -f /home/*.deb
 rm -f debconf.set
-# rm -f thirdstage
-# rm -f thirdstage.log
-# rm -rf /tmp
 rm -f .keep
+
+rm -f /etc/apt/*~
 cd /root
 rm -f .bash_history .cache .dbus .gvfs .local .nano .synaptic .thumbnails
+rm -rf .cache .synaptic
 cd ..
 rm -f vmlinuz.old initrd.img.old
 rm -f /etc/ssh/ssh_host_*
 rm -f /etc/fstab
 
+chmod +x /etc/rc.local
+
 # see here di_preseed_cfg
 chmod +x /usr/bin/preseed-hack
-# chmod +x /lib/live/config/1200-interfaces
+
+cp -av /etc/skel/.gtkrc-2.0 /root/
+mkdir -p /root/.config
+mkdir -p /root/.config/gtk-3.0
+cp -av /etc/skel/.config/gtk-3.0/settings.ini /root/.config/gtk-3.0/
 
 # display config dialog during the build!
 # dpkg-reconfigure xserver-xorg-legacy
 
+apt-get --yes --allow-remove-essential autoremove 
 apt-get clean
 rm -f /var/lib/apt/lists/*_dists_*
 
@@ -211,10 +290,6 @@ deb ${mirror} ${release}-backports ${section}
 exit 0" >> /usr/bin/preseed-hack
 EOF
 
-# Remove possible existent replicated lines from sudoers:
-uniq $strapdir/etc/sudoers /tmp/sudoers_$$
-rm -f $strapdir/etc/sudoers
-mv /tmp/sudoers_$$ $strapdir/etc/sudoers 
 
 #ls -al $strapdir
 
@@ -347,42 +422,6 @@ blend_Copy_Grub_Overlay() {
 
 }
 
-iso_write_isolinux_cfg() {
-	fn iso_write_isolinux_cfg
-	req=(workdir)
-	ckreq || return 1
-
-	# override	
-	
-	notice "copying isolinux overlay"
-
-	local version=$(find $workdir/env/home/syslinux -name "version")
-	sources=${version%/*}
-	sources=${sources##*/}
-	
-	mkdir -p $workdir/binary/isolinux	
-	
-	notice "copying syslinux"
-	cp -rav $workdir/env/home/syslinux/$sources/bios/core/isolinux.bin                  $workdir/binary/isolinux/
-	cp -rav $workdir/env/home/syslinux/$sources/bios/com32/chain/chain.c32              $workdir/binary/isolinux/
-	cp -rav $workdir/env/home/syslinux/$sources/bios/com32/elflink/ldlinux/ldlinux.c32  $workdir/binary/isolinux/
-	cp -rav $workdir/env/home/syslinux/$sources/bios/com32/lib/libcom32.c32             $workdir/binary/isolinux/	
-	cp -rav $workdir/env/home/syslinux/$sources/bios/com32/libutil/libutil.c32          $workdir/binary/isolinux/
-	cp -rav $workdir/env/home/syslinux/$sources/bios/com32/menu/vesamenu.c32            $workdir/binary/isolinux/
-		
-	cp -rav /$R/extra/common/isolinux-overlay/* $workdir/binary/isolinux/
-
-}
-
-iso_setup_variables() {
-	fn iso_set_variables
-	req=(workdir blend)
-	ckreq || return 1
-
-notice "iso_setup_variables"	
-
-}
-
 blend_post_efi() {
 	fn blend_post_efi
 	req=(workdir blend blendname)
@@ -390,732 +429,4 @@ blend_post_efi() {
 
 notice "executing $blend post_efi"	
 
-}
-
-di_customize() {
-	fn di_customize
-	req=(R workdir os)
-	ckreq || return 1
-	
-	mkdir -p $workdir/d-i
-	mv $workdir/binary/install/gtk/initrd.gz $workdir/d-i
-	pushd $workdir/d-i
-	gunzip initrd.gz
-	mkdir -p tmp && pushd tmp
-	
-	notice "Customizing debian installer"
-	
-	cpio -id < ../initrd
-	gtkrc="$R/extra/common/devuan-installer/gtk-theme/gtkrc"
-	logo="$R/extra/common/devuan-installer/gtk-theme/logo-banner.png"
-	symlink="$workdir/d-i/tmp/usr/share/graphics/logo_installer_darkpurpy.png"
-	symlink_dark="$workdir/d-i/tmp/usr/share/graphics/logo_installer_darkpurpy_dark.png"	
-	
-	[[ -f $gtkrc ]] && {
-		rm -f $workdir/d-i/tmp/usr/share/themes/Clearlooks/gtk-2.0/gtkrc
-		cp -av $gtkrc $workdir/d-i/tmp/usr/share/themes/Clearlooks/gtk-2.0/
-	}
-	
-	[[ -f $logo  ]] && {
-		[[ -f $symlink ]] && rm -f $symlink
-		[[ -f $symlink_dark ]] && rm -f $symlink_dark
-		rm -f $workdir/d-i/tmp/usr/share/graphics/bright-banner-${release}.png
-		cp -av $logo $workdir/d-i/tmp/usr/share/graphics/bright-banner-${release}.png
-		ln -s $workdir/d-i/tmp/usr/share/graphics/bright-banner-${release}.png $symlink
-		ln -s $workdir/d-i/tmp/usr/share/graphics/bright-banner-${release}.png $symlink_dark
-
-	}
-	
-	find . | cpio --create --format='newc' > ../initrd
-	popd
-	gzip -f initrd
-	mv initrd.gz $workdir/binary/install/gtk/initrd.gz
-	popd
-	rm -rf $workdir/d-i/tmp	
-}
-
-di_win32-loader() {
-
-	fn di_win32-loader
-	req=(workdir os release arch strapdir url_pkg url_di abiname flavor suite)
-	ckreq || return 1
-	
-	notice "Setting up win32-loader ..."
-
-	cat <<EOF | sudo tee ${strapdir}/install-win32-loader
-#!/bin/sh
-apt-get update
-apt-get --yes --force-yes install win32-loader
-EOF
-	chroot-script -d install-win32-loader || zerr
-
-
-	sudo mv ${workdir}/binary ${strapdir}
-		
-	sudo cp -rf ${strapdir}/usr/share/win32/* ${strapdir}/binary
-	
-	sudo mv ${strapdir}/binary/win32-loader.exe ${strapdir}/binary/setup.exe
-	sudo mv ${strapdir}/binary/win32-loader/g2ldr* ${strapdir}/binary
-	sudo rmdir ${strapdir}/binary/win32-loader > /dev/null 2>&1 || true
-
-blendname2=$blendname
-blendname2="$(echo "$blendname2" | sed 's/.*/\u&/')"
-
-cat > ${strapdir}/binary/autorun.inf << EOF
-[autorun]
-open=setup.exe
-icon=setup.exe,0
-label=Install ${blendname2} GNU/Linux
-
-[Content]
-MusicFiles=false
-PictureFiles=false
-VideoFiles=false
-EOF
-
-
-cat > ${strapdir}/binary/win32-loader.ini << EOF
-[installer]
-kernel=linux
-arch=${arch}
-${arch}/linux=install/vmlinuz
-${arch}/initrd=install/initrd.gz
-EOF
-
-			if [ -e ${strapdir}/binary/install/gtk ]
-			then
-
-cat >> ${strapdir}/binary/win32-loader.ini << EOF
-${arch}/gtk/linux=install/vmlinuz
-${arch}/gtk/initrd=install/gtk/initrd.gz
-EOF
-
-			fi
-
-cat >> ${strapdir}/binary/win32-loader.ini << EOF
-
-[grub]
-g2ldr=g2ldr
-g2ldr.mbr=g2ldr.mbr
-EOF
-
-
-	sudo mv ${strapdir}/binary ${workdir}
-	apt-get --yes --force-yes purge win32-loader	
-	cat <<EOF | sudo tee ${strapdir}/remove-win32-loader
-#!/bin/sh
-apt-get --yes --force-yes purge win32-loader
-apt-get --yes --force-yes autoremove
-apt-get clean
-EOF
-	chroot-script -d remove-win32-loader || zerr
-
-}
-
-di_preseed_cfg() {
-	fn di_preseed_cfg
-	req=(workdir os)
-	ckreq || return 1
-
-## the preseed.cfg file:
-	notice "Editing the preseed.cfg file"
-	
-	mkdir -p $workdir/binary/install
-
-	echo \
-"
-############
-## Global ##
-############
-
-
-# d-i debian-installer/locale string en_AU
-# d-i localechooser/supported-locales multiselect en_AU.UTF-8
-d-i localechooser/supported-locales multiselect en_US.UTF-8
-
-##
-# Change default hostname to ${derivative}
-d-i netcfg/get_hostname string ${derivative}
-d-i	netcfg/get_hostname	seen true
-##
-
-# The user account will be added to some standard initial groups. To
-# override that, use this.
-d-i passwd/user-default-groups string audio cdrom video sudo powerdev netdev plugdev fuse users lp lpadmin
-
-# Controls whether to use NTP to set the clock during the install
-d-i clock-setup/ntp boolean true
-# NTP server to use. The default is almost always fine here.
-# d-i clock-setup/ntp-server string ntp.example.com
-
-# Uncomment this if you don't want to use a network mirror.
-# d-i apt-setup/use_mirror boolean false
-
-# Package selection
-# d-i tasksel/first multiselect standard, web-server, ssh-server
-
-# This is fairly safe to set, it makes grub install automatically to the MBR
-# if no other operating system is detected on the machine.
-# d-i grub-installer/only_debian boolean true
-
-# load additional debian installer module 'choose-init'
-# (or use multiselect in case of additional modules needed)
-# d-i anna/choose_modules string choose-init
-
-# choose and init system you want to install: sysvinit, openrc
-# choose-init choose-init/select_init select openrc
-
-# Avoid that last message about the install being complete.
-d-i finish-install/reboot_in_progress note
-
-# This command is run just before the install finishes, but when there is
-# still a usable /target directory. You can chroot to /target and use it
-# directly, or use the apt-install and in-target commands to easily install
-# packages and run commands in the target system.
-d-i preseed/late_command string \
-    in-target /usr/local/bin/star_preseed ; \
-    in-target /usr/bin/preseed-hack ; \
-    in-target rm -f /usr/local/bin/star_preseed ; \
-    in-target rm -f /usr/bin/preseed-hack ;
-
-" > $workdir/binary/install/preseed.cfg
-
-	sudo chmod -R 777 $workdir/binary	
-}
-
-di_excludeudebs(){
-	fn di_excludeudebs
-	req=(workdir release abiname)
-	ckreq || return 1
-
-	notice "di_excludeudebs"
-
-	pushd $workdir/debs
-
-# 	notice "Excluding udebs"
-	for LOCATION in $R/extra/common/devuan-installer/excludes
-	do
-		if [ -e "${LOCATION}" ]
-		then
-			grep -v "^#" "${LOCATION}/${release}/udeb_exclude" > $workdir/exclude || true
-			echo "1.x"
-			grep -v "^#" "${LOCATION}/${release}/exclude-udebs" >> $workdir/exclude || true
-			echo "2.x"
-			grep -v "^#" "${LOCATION}/${release}/exclude-udebs-${arch}" >> $workdir/exclude || true
-			echo "3.x"
-
-			continue
-		fi
-	done
-
-	notice "Excluding udebs from excludes because we want them to be in the image on purpose"	
-	echo "4.x"
-	sed -i -e 's|di-utils-exit-installer||' $workdir/exclude # used for live-installer-launcher
-	# echo "5.x"
-	# "${abiname}" >> $workdir/exclude # used for live-installer-launcher
-
-	# cp $strapdir/boot/vmlinuz-$abiname-$flavor $workdir/binary/live/vmlinuz
-
-	# remove blank lines
-	echo "6.x"
-	sudo sed '/^[[:space:]]*$/d' $workdir/exclude
-	
-	echo "7.x"
-	cat $workdir/exclude
-
-	echo "8.x - [BAN DEB] "
-	for line in $(cat $workdir/exclude); do
-		pkg_name=${line##*/}
-		echo "[BAN DEB] :"$pkg_name
-		var=`find $workdir/binary../pool -name "*${pkg_name}*.udeb"`
-		IFS=$'\n' read -rd '' -A y <<<"$var"
-
-		echo "var=${y[1]}"
-		for pkg in ${y[@]}; do
-			echo "[BAN DEB - find] :"$pkg
-			rm -f $pkg
-		done		
-	done
-	 
-}
-
-build_kernel_${arch}() {
-	fn build_kernel_${arch}
-	req=(strapdir arch)
-	ckreq || return 1
-
-	local kernel_base="linux-image"
-	case "$arch" in
-		amd64) local kernel="${kernel_base}-amd64";;
-		i386)  local kernel="${kernel_base}-686";;
-	esac
-
-	notice "installing stock kernel for $arch"
-
-	cat <<EOF | sudo tee ${strapdir}/install-linux
-#!/bin/sh
-apt-get --yes --force-yes install ${kernel}
-apt-get --yes --force-yes autoremove
-apt-get clean
-if [ -e vmlinuz.old ]; then
-	rm -f vmlinuz.old initrd.img.old
-fi
-EOF
-	chroot-script -d install-linux || zerr
-}
-
-di_reprepro () {
-	fn di_reprepro
-	req=(workdir release abiname arch flavor suite mirror)
-	ckreq || return 1
-
-	mkdir -p $workdir/binary/conf
-	
-	echo \
-"Origin: Devuan
-Label: Debian ${release} packages
-Suite: ${suite}
-Codename: ${release}
-Architectures: ${arch}
-Components: main
-UDebComponents: main
-Description: Packages for devuan-installer
-DebIndices: Packages Release . .gz
-UDebIndices: Packages Release . .gz " > $workdir/binary/conf/distributions
-
-	mkdir -p $workdir/debs
-	
-	pushd $workdir/debs
-	rm -f Packages	
-	wget $mirror/dists/$release/main/binary-$arch/Packages.gz
-	gzip -d Packages.gz
-	mv Packages Packages1
-	rm -f Packages.gz
-	wget $mirror/dists/$release/main/binary-all/Packages.gz
-	gzip -d Packages.gz
-	mv Packages Packages2
-	cat Packages1 Packages2 > Packages3
-	rm -f Packages1 Packages2 
-	
-	if [[ $section == *"non-free"* ]]; then
-		# echo "**** 1.1 - NON-FREE"
-		wget $mirror/dists/$release/non-free/binary-$arch/Packages.gz
-		gzip -d Packages.gz
-		mv Packages Packages4
-	fi
-	
-	if [ -f Packages4 ] 
-	then
-		cat Packages3 Packages4 > Packages
-		rm -f Packages3 Packages4
-	else
-		mv Packages3 Packages
-	fi
-
-	case $arch in	
-		amd64)	grub_efi="grub-efi-amd64"
-				;;
-		i386)	grub_efi="grub-efi-ia32"
-				;;
-		*) error "invalid grub_arch specified"; zerr;;
-	esac	
-	
-	di_pkgs=(
-		grub-pc
-		grub-pc-bin
-		$grub_efi
-		${grub_efi}-bin
-		grub-common
-		grub2-common
-		efibootmgr
-		libefiboot1
-		libefivar1
-		libpopt0
-		ucf
-		libdevmapper1.02.1
-		libfreetype6
-		libfuse2
-		gettext-base
-		libpng16-16
-		dmsetup
-		firmware-linux-nonfree
-	)
-
-	for line in $di_pkgs; do
-		pkg=`grep "^Filename: pool/" Packages | grep "/${line}_" | grep ".deb$"`
-		echo "pkg : ${pkg}"
-		pkg=`echo $pkg | sort -r | head -n 1`
-		echo "pkg : ${pkg}"
-		wget $mirror/`echo $pkg | cut -d' ' -f2`
- 	done
-	
-	source $R/extra/reprepro_list
-	
-	pushd $workdir/binary
-
-	for line in $udebs_list; do
-		find $workdir/tmp_repo-$release \
-			-name "${line}_*${arch}.udeb" \
-			-exec reprepro \
-				--ask-passphrase -b . -V -C main includeudeb $release {} \;
-	done
-	
-	for line in $udebs_list; do
-		find $workdir/tmp_repo-$release \
-			-name "${line}_*all.udeb" \
-			-exec reprepro \
-				--ask-passphrase -b . -V -C main includeudeb $release {} \;
-	done
-
-	for line in $modules_list; do 
-		find $workdir/tmp_repo-$release \
-			-name "*${line}-modules-${abiname}*-${flavor}-di_*_${arch}.udeb" \
-			-exec reprepro \
-				--ask-passphrase -b . -V -C main includeudeb $release {} \;
- 	done
-	
-	find $workdir/debs -name "*.deb" -exec reprepro \
-		--ask-passphrase -b . -V -C main includedeb $release {} \;		
-		
-	popd && popd
-	
-	rm -rf $workdir/binary/conf
-	rm -rf $workdir/binary/db
-	ln -s $workdir/binary/dists/$release $workdir/binary/dists/$suite
-	# ln -s $workdir/binary $workdir/binary/debian
-		
-	notice "Symlink firmware packages to /firmware"
-	if ls $workdir/binary/pool/main/f/firmware-nonfree/firmware-linux-nonfree*.deb > /dev/null 2>&1
-	then
-		DI_FIRMWARE_PACKAGES="firmware-linux-nonfree"
-		if [ -n "${DI_FIRMWARE_PACKAGES}" ]
-		then
-			echo "syslink - firmware"
-			mkdir -p $workdir/binary/firmware
-			pushd $workdir/binary/firmware
-
-			for _PACKAGE in ${DI_FIRMWARE_PACKAGES}
-			do
-				echo "--1--"${DI_FIRMWARE_PACKAGES}
-				for _FILE in $(find ../pool -name "${_PACKAGE}*.deb")
-				do
-					echo "--2--"${_FILE}
-					ln -sf ${_FILE} ./
-				done
-			done
-
-			popd
-		fi
-	fi
-	
-}
-
-iso_make_efi() {
-	fn iso_make_efi "(override)"
-	req=(workdir mirror arch blend blendname)
-	ckreq || return 1
-	
-	notice "creating efi boot files"
-	
-	binary=$workdir/binary
-	efi_dir=$workdir/efi_dir
-	
-	if [ -d $efi_dir ] ; then
-		if [ -d $efi_dir/img-mnt ] ; then
-			umount -l $efi_dir/img-mnt
-		fi
-		rm -rf $efi_dir
-	fi
-	
-	mkdir $efi_dir
-	
-	# start with empty directories.
-	
-	if [ -d $binary/boot ] ; then
-		rm -rf $binary/boot
-	fi
-	
-	case $arch in	
-		amd64)  arch_efi="x86_64-efi"
-				boot_efi="bootx64.efi"
-				efi_pkg="grub-efi-amd64-bin"
-				;;
-		i386)   arch_efi="i386-efi"
-				boot_efi="bootia32.efi"
-				efi_pkg="grub-efi-ia32-bin"
-				;;
-		*) error "invalid grub_arch specified"; zerr;;
-	esac	
-	
-	mkdir -p $binary/efi/boot
-	mkdir -p $binary/boot/grub/theme
-	mkdir -p $binary/boot/grub/$arch_efi
-	
-	mkdir -p $efi_dir/efi/boot
-	mkdir -p $efi_dir/boot/grub/$arch_efi	
-	
-	# copy splash, theme and grub.cfg
-	#~ cp $R/extra/isolinux-overlay/splash.png $binary/boot/grub/	
-	#~ cp $R/extra/grub-overlay/1              $binary/boot/grub/theme
-	#~ cp $R/extra/grub-overlay/grub.cfg       $binary/boot/grub/
-
-	cp $R/extra/common/isolinux-overlay/splash.png $binary/boot/grub/	
-	cp $R/extra/common/grub-overlay/boot/grub/*    $binary/boot/grub/
-
-
-	tempdir=$efi_dir/"tmp"
-	mkdir -p $tempdir/boot/grub
-
-	cat >$tempdir/boot/grub/grub.cfg <<EOF
-search --file --set=root /isolinux/isolinux.cfg
-set prefix=(\$root)/boot/grub
-source \$prefix/${arch_efi}/grub.cfg
-EOF
-
-	pushd $tempdir
-	
-		# make a tarred "memdisk" to embed in the grub image
-		tar -cvf memdisk boot
-		
-		# make the grub image - Required grub-efi-amd64-bin or grub-efi-ia32-bin !!
-		grub-mkimage -O $arch_efi -m "memdisk" -o $boot_efi -p '(memdisk)/boot/grub' \
-			search iso9660 configfile normal memdisk tar cat part_msdos part_gpt fat ext2 ntfs ntfscomp hfsplus chain boot linux
-		
-	popd
-	
-	cp $tempdir/$boot_efi $efi_dir/efi/boot
-	cp $tempdir/$boot_efi $binary/efi/boot	
-	rm -rf $tempdir
-	
-	## Do the boot image "boot/grub/efiboot.img"	
-	dd if=/dev/zero of=$efi_dir/boot/grub/efiboot.img bs=1K count=1440
-	/sbin/mkdosfs -F 12 $efi_dir/boot/grub/efiboot.img
-	mkdir $efi_dir/img-mnt
-	mount -o loop $efi_dir/boot/grub/efiboot.img $efi_dir/img-mnt
-	mkdir -p $efi_dir/img-mnt/efi/boot
-	cp $efi_dir/efi/boot/$boot_efi $efi_dir/img-mnt/efi/boot/
-	umount -l $efi_dir/img-mnt
-	rmdir $efi_dir/img-mnt
-	
-	cp $efi_dir/boot/grub/efiboot.img $binary/boot/grub/
-	
-	pushd $efi_dir
-	wget $mirror/dists/$release/main/binary-$arch/Packages.gz
-	gzip -d Packages.gz
-	pkg=`grep "^Filename: pool/" Packages | grep "/${efi_pkg}_" | grep "_${arch}.deb"`
-	wget $mirror/${pkg#*" "}
-	pkg=${pkg##*/}
-	dpkg -x $pkg $efi_pkg
-	pkg=`grep "^Filename: pool/" Packages | grep "/grub-common_" | grep "_${arch}.deb"`
-	wget $mirror/${pkg#*" "}
-	pkg=${pkg##*/}
-	dpkg -x $pkg grub-common	
-	rm -f Packages
-	
-	# copy modules and font
-	cp $efi_dir/$efi_pkg/usr/lib/grub/$arch_efi/*.mod $binary/boot/grub/$arch_efi/
-	cp $efi_dir/$efi_pkg/usr/lib/grub/$arch_efi/*.lst $binary/boot/grub/$arch_efi/
-	
-	# Delete some modules
-	list=$R/extra/banmods
-	for line in $(cat $list); do
-		rm -f $binary/boot/grub/$arch_efi/${line}.mod
-	done
-	
-	# if this doesn't work try another font from the same place (grub's default, unicode.pf2, is much larger)
-	# Either of these will work, and they look the same to me. Unicode seems to work with qemu. -fsr
-#	cp grub-common/usr/share/grub/ascii.pf2 boot/grub/font.pf2
-	cp $efi_dir/grub-common/usr/share/grub/unicode.pf2 $binary/boot/grub/font.pf2
-	
-	# second grub.cfg file
-	for i in $(ls $efi_dir/$efi_pkg/usr/lib/grub/$arch_efi|grep part_|grep \.mod|sed 's/.mod//'); do
-		echo "insmod $i" >> $binary/boot/grub/$arch_efi/grub.cfg;
-	done	
-	
-	# Additional modules so we don't boot in blind mode. I don't know which ones are really needed.
-	#for i in efi_gop efi_uga ieee1275_fb vbe vga video_bochs video_cirrus jpeg png gfxterm ; do
-	#	echo "insmod $i" >> $workdir/binary/boot/grub/$arch_efi/grub.cfg ;
-	#done
-	
-	echo "source /boot/grub/grub.cfg" >> $workdir/binary/boot/grub/$arch_efi/grub.cfg
-	
-	rm -rf $efi_dir
-	
-	popd
-	unset tempdir efi_dir arch_efi boot_efi
-}
-
-
-iso_xorriso_build() {
-	fn iso_xorriso_build
-	req=(R workdir arch earch blendlib version release make_isohybrid)
-	ckreq || return 1
-
-	notice "building iso..."
-	
-	#date_stamp=$(date "+%Y.%m.%d")
-	date_stamp=$(date "+%Y.%m")
-	#blend_distribution=${blend%%-*}
-	blend=${blendlib##*/}
-	blend_distribution=${blend%%-*}
-	#label=`echo "${blend_distribution}" | sed 's/^./\u&/'`
-	#release_label=`echo "${release}" | sed 's/^./\u&/'`
-	label=${blend##*-}
-	label=${label%%.*}
-	release_label=$release
-	image_name="${blend_distribution}-${version}-${release_name}_${date_stamp}-${label}_${earch}"
-	
-	isohybrid="$R"/extra/syslinux/isohdpfx.bin
-
-	rm -rf $R/dist
-	mkdir -p $R/dist
-	pushd $workdir
-	
-	[[ -f $workdir/binary/md5sums ]] && rm -f $workdir/binary/md5sums
-	
-	chmod -R 777 $workdir/binary
-	pushd $workdir/binary	
-	find . -xdev -type f -print0 | xargs -0 md5sum > md5sums
-	popd
-	
-	# If isohdpfx.bin gets moved again, maybe use:   isohdpfx=$(find /usr/lib/ -name isohdpfx.bin)
-    [[ $make_isohybrid = yes ]] && {
-       if [[ -f /usr/lib/syslinux/mbr/isohdpfx.bin ]] ; then
-          isohybrid=/usr/lib/syslinux/mbr/isohdpfx.bin
-       elif [[ -f /usr/lib/syslinux/isohdpfx.bin ]] ; then
-          isohybrid=/usr/lib/syslinux/isohdpfx.bin
-       elif [[ -f /usr/lib/ISOLINUX/isohdpfx.bin ]] ; then
-          #isohybrid_opt="-isohybrid-mbr "
-          isohybrid=/usr/lib/ISOLINUX/isohdpfx.bin
-		else
-		  echo "Can't create isohybrid.  File: isohdpfx.bin not found. The resulting image will be a standard iso file."
-		fi
-	}
-	
-	xorriso -as mkisofs -r -J -joliet-long -l \
-		-isohybrid-mbr $isohybrid \
-		-o $R/dist/customiso.iso "$workdir/binary" \
-		-partition_offset 16 \
-		-V "${blend_distribution} Live - ${flavor}" \
-		-b isolinux/isolinux.bin \
-		-c isolinux/boot.cat \
-		-no-emul-boot \
-		-boot-load-size 4 \
-		-boot-info-table \
-		-eltorito-alt-boot -e boot/grub/efiboot.img -isohybrid-gpt-basdat -no-emul-boot
-
-	mv $R/dist/customiso.iso $R/dist/$image_name.iso
-	
-	pushd $R/dist
-	md5sum $image_name.iso > $image_name.iso.md5
-	popd && popd
-
-	[[ "$DEBUG" = 1 ]] || {
-		[[ -n "$workdir" ]] && rm -rf "$workdir"
-	}
-}
-
-iso_setup_kernel() {
-	fn iso_setup_kernel
-	req=(workdir strapdir abiname flavor)
-	ckreq || return 1
-
-	mkdir -p $workdir/binary/live
-	
-	act "copying kernel and initrd"
-	
-	#~ cp $strapdir/boot/vmlinuz-$abiname-$flavor $workdir/binary/live/vmlinuz
-	#~ cp $strapdir/boot/initrd.img-$abiname-$flavor  $workdir/binary/live/initrd.img
-	#cp $strapdir/boot/memtest86+.bin $workdir/binary/live/memtest
-	
-	cp $strapdir/boot/vmlinuz* $workdir/binary/live/vmlinuz
-	cp $strapdir/boot/initrd.img*  $workdir/binary/live/initrd.img
-	
-	sudo rm -f $workdir/binary/install/gtk/vmlinuz
-	sudo rm -f $workdir/binary/install/vmlinuz	
-	sudo ln $workdir/binary/live/vmlinuz $workdir/binary/install/gtk/vmlinuz
-	sudo ln $workdir/binary/live/vmlinuz $workdir/binary/install/vmlinuz
-		
-}
-
-
-conf_print_resolvconf() {
-	fn conf_print_resolvconf
-
-	cat <<EOF
-## Cloudflare's nameservers
-#~ nameserver 1.1.1.1
-#~ nameserver 1.0.0.1
-## google's nameservers
-nameserver 8.8.8.8
-nameserver 8.8.4.4
-## Cisco OpenDNS
-#~ nameserver 208.67.222.222 
-#~ nameserver 208.67.220.220
-EOF
-}
-
-conf_print_netifaces() {
-	fn conf_print_netifaces
-
-	cat <<EOF
-# interfaces(5) file used by ifup(8) and ifdown(8)
-
-# Please note that this file is written to be used with dhcpcd
-# For static IP, consult /etc/dhcpcd.conf and 'man dhcpcd.conf'
-
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-
-# Include files from /etc/network/interfaces.d:
-source /etc/network/interfaces.d/*
-
-# The loopback network interface
-auto lo
-iface lo inet loopback
-
-# The primary network interface
-# https://dev1galaxy.org/viewtopic.php?pid=15493#p15493
-auto eth0
-iface eth0 inet dhcp
-
-iface wlan0 inet dhcp
-EOF
-}
-
-build_iso_dist() {
-	fn build_iso_dist
-	req=(workdir strapdir os arch)
-	ckreq || return 1
-
-	notice "building complete iso image"
-	
-	notice "[abiname] : ${abiname}"
-
-	bootstrap_complete_base             || { zerr; wrapup }
-	build_kernel_${arch}                || { zerr; wrapup }
-	iso_prepare_strap                   || { zerr; wrapup }
-	bootstrap_thirdstage                || { zerr; wrapup }
-	install-customdebs                  || { zerr; wrapup }
-	blend_preinst                       || { zerr; wrapup }
-	blend_postinst                      || { zerr; wrapup }
-	blend_finalize                      || { zerr; wrapup }
-	fill_apt_cache                      || { zerr; wrapup }
-	di_disk_info                        || { zerr; wrapup }
-	di_debmirror                        || { zerr; wrapup }
-	di_localudebs                       || { zerr; wrapup } 
-	di_reprepro                         || { zerr; wrapup }
-	di_excludeudebs                     || { zerr; wrapup }		
-	di_debian_installer                 || { zerr; wrapup }
-	di_preseed_cfg                      || { zerr; wrapup }
-	di_customize                        || { zerr; wrapup }
-	di_win32-loader         		    || { zerr; wrapup }
-	iso_syslinux                        || { zerr; wrapup }
-	iso_write_isolinux_cfg              || { zerr; wrapup }
-	iso_make_efi                        || { zerr; wrapup }
-	blend_prebuild	                    || { zerr; wrapup }
-	iso_setup_variables                 || { zerr; wrapup }
-	iso_setup_kernel                    || { zerr; wrapup }
-	iso_squash_strap                    || { zerr; wrapup }
-	iso_xorriso_build                   || { zerr; wrapup }
 }

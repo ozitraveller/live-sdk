@@ -9,9 +9,9 @@ cdebconf-newt-udeb
 cdebconf-priority
 cdebconf-text-udeb
 cdebconf-udeb
-cdrom-checker
-cdrom-detect
-cdrom-retriever
+# cdrom-checker
+# cdrom-detect
+# cdrom-retriever
 console-setup-pc-ekmap
 console-setup-udeb
 devuan-keyring-udeb

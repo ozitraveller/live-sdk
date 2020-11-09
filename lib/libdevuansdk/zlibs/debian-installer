@@ -121,7 +121,7 @@ UDebIndices: Packages Release . .gz " > $workdir/binary/conf/distributions
 		i386)	grub_efi="grub-efi-ia32"
 				;;
 		*) error "invalid grub_arch specified"; zerr;;
-	esac	
+	esac
 	
 	di_pkgs=(
 		grub-pc
@@ -142,7 +142,7 @@ UDebIndices: Packages Release . .gz " > $workdir/binary/conf/distributions
 		libpng16-16
 		dmsetup
 	)
-
+	
 	for line in $di_pkgs; do
 		pkg=`grep "^Filename: pool/" Packages | grep "/${line}_" | grep ".deb$"`
 		pkg=`echo $pkg | head -n 1`
@@ -199,7 +199,7 @@ apt-get update
 apt-get --yes --force-yes install locales dpkg-dev
 sed -e 's/# ${LANG}/${LANG}/' -i /etc/locale.gen
 locale-gen LANG=${LANG} LANGUAGE=${LANG} LC_CTYPE=${LANG} LC_ALL=${LANG}
-source /etc/default/locale
+. /etc/default/locale
 apt-get source debian-installer
 apt-get clean
 EOF

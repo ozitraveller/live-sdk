@@ -43,7 +43,10 @@ blend_postinst() {
 	mkdir -p $workdir/blend
 	cp -rf $R/extra/common/rootfs-overlay/* $workdir/blend
 	cp -rf $BLENDPATH/common/rootfs-overlay/* $workdir/blend
-	cp -rf $BLENDPATH/$blendtype/rootfs-overlay/* $workdir/blend
+	
+	if [[ $section == *"generic"* ]]; then 
+		cp -rf $BLENDPATH/blends/$blendtype/rootfs-overlay/* $workdir/blend
+	fi
 	
 	notice "Copying system hooks"
 	cp -rf $R/extra/common/hooks/normal/* $workdir/blend/hooks
@@ -72,9 +75,52 @@ blend_postinst() {
 		[[ ${line##*/} != "bin" ]] && chmod -R 655 $strapdir/usr/bin/${line##*/}
 	done
 
-	for line in `find $blendname/rootfs-overlay/lib/live/config -name "*"`; do
-		[[ ${line##*/} != "config" ]] && chmod -R 700 $strapdir/lib/live/config/${line##*/}
-	done	
+	if [ -d $blendname/rootfs-overlay/lib/live/config ] ; then 
+		for line in `find $blendname/rootfs-overlay/lib/live/config -name "*"`; do
+			[[ ${line##*/} != "config" ]] && sudo chmod -R 700 $strapdir/lib/live/config/${line##*/}
+		done
+	fi
+
+	for line in `find $R/extra/common/rootfs-overlay/lib/live/config -name "*"`; do
+		[[ ${line##*/} != "config" ]] && sudo chmod -R 700 $strapdir/lib/live/config/${line##*/}
+	done
+
+	echo \
+"#!/bin/sh
+
+set -e
+
+# just a hack for the live-user setup under jessie
+
+ConfigureLiveUser ()
+{
+echo -n \" Live User\"
+
+# groupadd $liveuser
+# /usr/sbin/useradd --home /home/$os --create-home --gid $liveuser $liveuser
+
+groups=\"cdrom floppy audio dip sudo video plugdev fuse bluetooth netdev scanner\"
+
+for i in \$groups; do
+usermod -a -G \$i $liveuser
+done
+
+user_passwd_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\":\"\$2\":\" }' /target/etc/passwd)
+user_new_passwd_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\"::\" }' /target/etc/passwd)
+
+sed -i \"s/^\${user_passwd_line}/\${user_new_passwd_line}/g\" /target/etc/passwd
+
+user_shadow_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\":\"\$2\":\" }' /target/etc/shadow)
+user_new_shadow_line=\$(awk -F':' '\$1 ~ /^${liveuser}$/ { print \$1\"::\" }' /target/etc/shadow)
+
+sed -i \"s/^\${user_shadow_line}/\${user_new_shadow_line}/g\" /target/etc/shadow
+
+}
+
+ConfigureLiveUser
+" > $strapdir/lib/live/config/1220-live-user-setup
+
+chmod -R 700 $strapdir/lib/live/config/1220-live-user-setup
 			
 	echo \
 "# Xwrapper.config (Debian X Window System server wrapper configuration file)
@@ -615,25 +661,28 @@ di_excludeudebs(){
 	# cp $strapdir/boot/vmlinuz-$abiname-$flavor $workdir/binary/live/vmlinuz
 
 	# remove blank lines
-	echo "6.x"
+	#~ echo "6.x"
 	sudo sed '/^[[:space:]]*$/d' $workdir/exclude
 	
-	echo "7.x"
-	cat $workdir/exclude
+	#~ echo "7.x"
+	#~ cat $workdir/exclude
 
-	echo "8.x - [BAN DEB] "
-	for line in $(cat $workdir/exclude); do
-		pkg_name=${line##*/}
-		echo "[BAN DEB] :"$pkg_name
-		var=`find $workdir/binary../pool -name "*${pkg_name}*.udeb"`
-		IFS=$'\n' read -rd '' -A y <<<"$var"
+	# echo "8.x - [BAN DEB] "
+	if [ -f $workdir/exclude ] 
+	then
+		for line in $(cat $workdir/exclude); do
+			pkg_name=${line##*/}
+	# 		echo "[BAN DEB] :"$pkg_name
+			var=`find $workdir/binary../pool -name "*${pkg_name}*.udeb"`
+			IFS=$'\n' read -rd '' -A y <<<"$var"
 
-		echo "var=${y[1]}"
-		for pkg in ${y[@]}; do
-			echo "[BAN DEB - find] :"$pkg
-			rm -f $pkg
-		done		
-	done
+	# 		echo "var=${y[1]}"
+			for pkg in ${y[@]}; do
+	# 			echo "[BAN DEB - find] :"$pkg
+				rm -f $pkg
+			done		
+		done
+	fi
 	 
 }
 
@@ -747,7 +796,7 @@ UDebIndices: Packages Release . .gz " > $workdir/binary/conf/distributions
 		wget $mirror/`echo $pkg | cut -d' ' -f2`
  	done
 	
-	source $R/extra/reprepro_list
+	source $R/extra/debian-installer/reprepro_list
 	
 	pushd $workdir/binary
 
@@ -809,7 +858,7 @@ UDebIndices: Packages Release . .gz " > $workdir/binary/conf/distributions
 }
 
 iso_make_efi() {
-	fn iso_make_efi "(override)"
+	fn iso_make_efi
 	req=(workdir mirror arch blend blendname)
 	ckreq || return 1
 	
@@ -944,74 +993,77 @@ EOF
 }
 
 
-iso_xorriso_build() {
-	fn iso_xorriso_build
-	req=(R workdir arch earch blendlib version release make_isohybrid)
-	ckreq || return 1
+#~ iso_xorriso_build() {
+	#~ fn iso_xorriso_build
+	#~ req=(R workdir arch earch blendlib version release make_isohybrid)
+	#~ ckreq || return 1
 
-	notice "building iso..."
+	#~ notice "building iso..."
 	
-	#date_stamp=$(date "+%Y.%m.%d")
-	date_stamp=$(date "+%Y.%m")
-	#blend_distribution=${blend%%-*}
-	blend=${blendlib##*/}
-	blend_distribution=${blend%%-*}
-	#label=`echo "${blend_distribution}" | sed 's/^./\u&/'`
-	#release_label=`echo "${release}" | sed 's/^./\u&/'`
-	label=${blend##*-}
-	label=${label%%.*}
-	release_label=$release
-	image_name="${blend_distribution}-${version}-${release_name}_${date_stamp}-${blendtype}_${earch}"
+	#~ #date_stamp=$(date "+%Y.%m.%d")
+	#~ date_stamp=$(date "+%Y.%m")
+	#~ #blend_distribution=${blend%%-*}
+	#~ blend=${blendlib##*/}
+	#~ blend_distribution=${blend%%-*}
+	#~ #label=`echo "${blend_distribution}" | sed 's/^./\u&/'`
+	#~ #release_label=`echo "${release}" | sed 's/^./\u&/'`
+	#~ label=${blend##*-}
+	#~ label=${label%%.*}
+	#~ release_label=$release
 	
-	isohybrid="$R"/extra/syslinux/isohdpfx.bin
+	#~ if [[ $section == *"generic"* ]]; then 
+		#~ image_name="${blend_distribution}-${version}-${release_name}_${date_stamp}-${blendtype}_${earch}"
+	#~ fi	
+	
+	#~ isohybrid="$R"/extra/syslinux/isohdpfx.bin
 
-	rm -rf $R/dist
-	mkdir -p $R/dist
-	pushd $workdir
+	#~ rm -rf $R/dist
+	#~ mkdir -p $R/dist
+	#~ pushd $workdir
 	
-	[[ -f $workdir/binary/md5sums ]] && rm -f $workdir/binary/md5sums
+	#~ [[ -f $workdir/binary/md5sums ]] && rm -f $workdir/binary/md5sums
 	
-	chmod -R 777 $workdir/binary
-	pushd $workdir/binary	
-	find . -xdev -type f -print0 | xargs -0 md5sum > md5sums
-	popd
+	#~ chmod -R 777 $workdir/binary
+	#~ pushd $workdir/binary	
+	#~ find . -xdev -type f -print0 | xargs -0 md5sum > md5sums
+	#~ popd
 	
-	# If isohdpfx.bin gets moved again, maybe use:   isohdpfx=$(find /usr/lib/ -name isohdpfx.bin)
-    [[ $make_isohybrid = yes ]] && {
-       if [[ -f /usr/lib/syslinux/mbr/isohdpfx.bin ]] ; then
-          isohybrid=/usr/lib/syslinux/mbr/isohdpfx.bin
-       elif [[ -f /usr/lib/syslinux/isohdpfx.bin ]] ; then
-          isohybrid=/usr/lib/syslinux/isohdpfx.bin
-       elif [[ -f /usr/lib/ISOLINUX/isohdpfx.bin ]] ; then
-          #isohybrid_opt="-isohybrid-mbr "
-          isohybrid=/usr/lib/ISOLINUX/isohdpfx.bin
-		else
-		  echo "Can't create isohybrid.  File: isohdpfx.bin not found. The resulting image will be a standard iso file."
-		fi
-	}
+	#~ # If isohdpfx.bin gets moved again, maybe use:   isohdpfx=$(find /usr/lib/ -name isohdpfx.bin)
+    #~ [[ $make_isohybrid = yes ]] && {
+       #~ if [[ -f /usr/lib/syslinux/mbr/isohdpfx.bin ]] ; then
+          #~ isohybrid=/usr/lib/syslinux/mbr/isohdpfx.bin
+       #~ elif [[ -f /usr/lib/syslinux/isohdpfx.bin ]] ; then
+          #~ isohybrid=/usr/lib/syslinux/isohdpfx.bin
+       #~ elif [[ -f /usr/lib/ISOLINUX/isohdpfx.bin ]] ; then
+          #~ #isohybrid_opt="-isohybrid-mbr "
+          #~ isohybrid=/usr/lib/ISOLINUX/isohdpfx.bin
+		#~ else
+		  #~ echo "Can't create isohybrid.  File: isohdpfx.bin not found. The resulting image will be a standard iso file."
+		#~ fi
+	#~ }
 	
-	xorriso -as mkisofs -r -J -joliet-long -l \
-		-isohybrid-mbr $isohybrid \
-		-o $R/dist/customiso.iso "$workdir/binary" \
-		-partition_offset 16 \
-		-V "${blend_distribution} Live - ${flavor}" \
-		-b isolinux/isolinux.bin \
-		-c isolinux/boot.cat \
-		-no-emul-boot \
-		-boot-load-size 4 \
-		-boot-info-table \
-		-eltorito-alt-boot -e boot/grub/efiboot.img -isohybrid-gpt-basdat -no-emul-boot
+	#~ xorriso -as mkisofs -r -J -joliet-long -l \
+		#~ -isohybrid-mbr $isohybrid \
+		#~ -o $R/dist/customiso.iso "$workdir/binary" \
+		#~ -partition_offset 16 \
+		#~ -V "${blend_distribution} Live - ${flavor}" \
+		#~ -b isolinux/isolinux.bin \
+		#~ -c isolinux/boot.cat \
+		#~ -no-emul-boot \
+		#~ -boot-load-size 4 \
+		#~ -boot-info-table \
+		#~ -eltorito-alt-boot -e boot/grub/efiboot.img -isohybrid-gpt-basdat -no-emul-boot
 
-	mv $R/dist/customiso.iso $R/dist/$image_name.iso
+	#~ mv $R/dist/customiso.iso $R/dist/$image_name.iso
 	
-	pushd $R/dist
-	md5sum $image_name.iso > $image_name.iso.md5
-	popd && popd
+	#~ pushd $R/dist
+	#~ md5sum $image_name.iso > $image_name.iso.md5
+	#~ popd && popd
 
-	[[ "$DEBUG" = 1 ]] || {
-		[[ -n "$workdir" ]] && rm -rf "$workdir"
-	}
-}
+	#~ [[ "$DEBUG" = 1 ]] || {
+		#~ [[ -n "$workdir" ]] && rm -rf "$workdir"
+	#~ }
+#~ }
 
 iso_setup_kernel() {
 	fn iso_setup_kernel
@@ -1053,34 +1105,6 @@ nameserver 8.8.4.4
 EOF
 }
 
-conf_print_netifaces() {
-	fn conf_print_netifaces
-
-	cat <<EOF
-# interfaces(5) file used by ifup(8) and ifdown(8)
-
-# Please note that this file is written to be used with dhcpcd
-# For static IP, consult /etc/dhcpcd.conf and 'man dhcpcd.conf'
-
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-
-# Include files from /etc/network/interfaces.d:
-source /etc/network/interfaces.d/*
-
-# The loopback network interface
-auto lo
-iface lo inet loopback
-
-# The primary network interface
-# https://dev1galaxy.org/viewtopic.php?pid=15493#p15493
-auto eth0
-iface eth0 inet dhcp
-
-iface wlan0 inet dhcp
-EOF
-}
-
 build_iso_dist() {
 	fn build_iso_dist
 	req=(workdir strapdir os arch)
@@ -1103,7 +1127,7 @@ build_iso_dist() {
 	di_debmirror                        || { zerr; wrapup }
 	di_localudebs                       || { zerr; wrapup } 
 	di_reprepro                         || { zerr; wrapup }
-	di_excludeudebs                     || { zerr; wrapup }		
+ 	di_excludeudebs                     || { zerr; wrapup }		
 	di_debian_installer                 || { zerr; wrapup }
 	di_preseed_cfg                      || { zerr; wrapup }
 	di_customize                        || { zerr; wrapup }

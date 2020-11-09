@@ -21,6 +21,11 @@
 ## live-sdk configuration
 ## ----------------------
 
+declare -a core_packages
+declare -a base_packages
+declare -a extra_packages
+declare -a purge_packages
+
 MAKEOPTS="-j$(grep -c 'processor' /proc/cpuinfo)"
 
 os="devuan"
@@ -32,7 +37,7 @@ derivative="star"
 liveuser="starlive"
 
 release_name="spock"
-blendtype="jwm"
+blendtype="openbox"
 
 ## common packages for all images
 core_packages+=(
@@ -43,6 +48,10 @@ core_packages+=(
 	libc6
 	libc-bin
 	initramfs-tools
+	e2fsprogs
+	less
+	nano
+	curl
 	sysvinit
 	sysvinit-core
 	sysvinit-utils
@@ -69,7 +78,7 @@ base_packages+=(
 	console-setup
 	console-data
 	isc-dhcp-client
-	isc-dhcp-common
+	ifupdown
 	dselect
 	rsync
 	gnupg2

@@ -3,7 +3,6 @@
 
 core_packages+=(
 	
-	e2fsprogs
 	# btrfs-progs
 	# reiserfsprogs 
 	# reiser4progs 
@@ -15,9 +14,6 @@ core_packages+=(
 	xfsdump 
 	jfsutils 		
 	gpart
-	less
-	nano
-	curl
 	live-tools
 	eject
 	file
@@ -35,13 +31,12 @@ base_packages+=(
 	# acpi-support-base
 	apt-listchanges
 	dnsutils
-	ftp
+	# ftp
 	iw
 	# laptop-detect
-	reportbug
+	# reportbug
 	usbutils
 	whois
-	dhcpcd5
 	net-tools
 	psmisc
 	wpasupplicant
@@ -146,7 +141,6 @@ extra_packages+=(
 	pciutils
 	task-english
 	# kexec-tools
-	tint2
 	dunst
 	connman
 	connman-ui
@@ -167,8 +161,10 @@ extra_packages+=(
 	xarchiver
 	libnotify-bin
 	haveged
-	galternatives
+	# galternatives
 	#~ libsox-fmt-all
+	# inxi
+	# linux-headers-${arch}
 
 )
 
@@ -177,13 +173,15 @@ extra_packages+=(
 	openbox
 	obconf
 	obmenu
+	tint2
 	
 )
 
 [[ $blendtype = "fluxbox" ]] && extra_packages+=(
 
 	fluxbox
-	
+	tint2
+		
 )
 
 [[ $blendtype = "jwm" ]] && extra_packages+=(
@@ -241,15 +239,15 @@ purge_packages+=(
 	aptitude-common
 	avahi-daemon
 	bluez
-	console-common
-	console-data
-	console-setup
-	console-setup-linux
+	#~ console-common
+	#~ console-data
+	#~ console-setup
+	#~ console-setup-linux
 	cups-bsd
 	cups-client
 	cups-common
 	debian-keyring
-	deselect
+	#~ deselect
 	elogind
 	enchant
 	evince
@@ -288,10 +286,7 @@ purge_packages+=(
 	tint2
 	lxappearance
 	lxterminal
-	mirage
-	mousepad
 	yad
-	mpv
 	pmount
 	xarchiver
 	libnotify-bin

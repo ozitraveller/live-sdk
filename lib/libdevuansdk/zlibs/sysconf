@@ -28,6 +28,7 @@ apt-get update
 apt-get --yes --force-yes install locales
 sed -e 's/# C.UTF-8 UTF-8/C.UTF-8 UTF-8/' -i /etc/locale.gen
 locale-gen LC_ALL=C.UTF-8 LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_CTYPE=C.UTF-8 LC_MESSAGES=C.UTF-8
+. /etc/default/locale
 apt-get clean
 EOF
 }
@@ -52,24 +53,6 @@ fe00::0          ip6-localnet
 fe00::0          ip6-mcastprefix
 fe02::1          ip6-allnodes
 fe02::1          ip6-allrouters
-EOF
-}
-
-conf_print_netifaces() {
-	fn conf_print_netifaces "(override)"
-
-	cat <<EOF
-# interfaces(5) file used by ifup(8) and ifdown(8)
-
-# Please note that this file is written to be used with dhcpcd
-# For static IP, consult /etc/dhcpcd.conf and 'man dhcpcd.conf'
-
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-
-# Include files from /etc/network/interfaces.d:
-# source /etc/network/interfaces.d/*
-
 EOF
 }
 

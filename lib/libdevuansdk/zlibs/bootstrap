@@ -50,7 +50,6 @@ bootstrap_complete_base() {
 	notice "writing system configuration"
 	conf_print_hostname    | sudo tee $strapdir/etc/hostname             >/dev/null
 	conf_print_hosts       | sudo tee $strapdir/etc/hosts                >/dev/null
-	conf_print_netifaces   | sudo tee $strapdir/etc/network/interfaces   >/dev/null
 	conf_print_resolvconf  | sudo tee $strapdir/etc/resolv.conf          >/dev/null
 	conf_print_sourceslist | sudo tee $strapdir/etc/apt/sources.list     >/dev/null
 	conf_print_debconf     | sudo tee $strapdir/debconf.set              >/dev/null
@@ -123,9 +122,70 @@ bootstrap_thirdstage() {
 	chroot-script -d thirdstage || zerr
 }
 
+#~ bootstrap_config_thirdstage() {
+	#~ fn bootstrap_config_thirdstage
+	#~ req=(R os strapdir arch release core_packages base_packages)
+	#~ ckreq || return 1
+	
+	#~ full_list=(
+
+		#~ ${core_packages[*]}
+		#~ ${base_packages[*]}
+		#~ ${extra_packages[*]}
+	#~ )
+
+	#~ cat << EOF | sudo tee $strapdir/thirdstage >/dev/null
+#~ #!/bin/sh
+#~ ## check if all our core, base and extra packages exist
+
+#~ apt-get update
+#~ allpkgs="\$(apt-cache search '.' | cut -d' ' -f1)"
+
+#~ for i in ${full_list} ; do
+	#~ printf "%s" "\$allpkgs" | grep -q "^\$i$" || {
+		#~ case "\$i" in
+			#~ --*) continue ;;
+			#~ *)   missing="\$missing \$i" ;;
+		#~ esac
+	#~ }
+#~ done
+
+#~ [ -n "\$missing" ] && {
+	#~ printf "\033[1;31m[!!] some packages don't exist\033[0m\n"
+	#~ printf "%s\n" "\$missing"
+	#~ exit 1
+#~ }
+
+#~ source /etc/default/locale
+
+#~ echo "Installing the core packages..."
+#~ DEBIAN_FRONTEND=noninteractive apt-get --yes --allow-unauthenticated install ${core_packages}
+
+#~ echo "Installing the base packages..."
+#~ DEBIAN_FRONTEND=noninteractive apt-get --yes --allow-unauthenticated install ${base_packages}
+
+#~ echo "Installing the extra packages..."
+#~ (( ${#extra_packages[*]} > 0 )) && DEBIAN_FRONTEND=noninteractive apt-get --yes --allow-unauthenticated install ${extra_packages}
+
+#~ # (( ${#purge_packages[*]} > 0 )) && DEBIAN_FRONTEND=noninteractive apt-get --yes --allow-unauthenticated purge ${purge_packages}
+
+	#~ for _PACKAGE in ${purge_packages}
+	#~ do
+		#~ echo "REMOVE: \${_PACKAGE}"
+		#~ apt-get --yes --allow-unauthenticated purge "\${_PACKAGE}"
+	#~ done
+
+#~ apt-get --yes --force-yes autoremove
+#~ apt-get clean
+#~ EOF
+
+#~ }
+
+
+
 bootstrap_config_thirdstage() {
 	fn bootstrap_config_thirdstage
-	req=(R os strapdir arch release core_packages base_packages extra_packages)
+	req=(R os strapdir arch release core_packages base_packages)
 	ckreq || return 1
 	
 	full_list=(
@@ -136,14 +196,10 @@ bootstrap_config_thirdstage() {
 	)
 
 	cat << EOF | sudo tee $strapdir/thirdstage >/dev/null
-#!/bin/bash
-# change "bash" to "sh" to get logging. It's a BIG log!
-
+#!/bin/sh
 ## check if all our core, base and extra packages exist
 
 apt-get update
-
-## uncomment for logging
 allpkgs="\$(apt-cache search '.' | cut -d' ' -f1)"
 
 for i in ${full_list} ; do
@@ -172,14 +228,12 @@ DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${base_packages
 echo "Installing the extra packages..."
 (( ${#extra_packages[*]} > 0 )) && DEBIAN_FRONTEND=noninteractive apt-get --yes --force-yes install ${extra_packages}
 
-echo "Purge packages..."
-# (( ${#purge_packages[*]} > 0 )) && apt-get --yes --force-yes purge ${purge_packages}
+##(( ${#purge_packages[*]} > 0 )) && apt-get --yes --force-yes purge ${purge_packages}
 
-# this seems to produce a small iso!
 	for _PACKAGE in ${purge_packages}
 	do
 		echo "REMOVE: \${_PACKAGE}"
-		apt-get --yes --force-yes purge "\${_PACKAGE}"
+		apt-get --yes --allow-unauthenticated purge "\${_PACKAGE}"
 	done
 
 apt-get --yes --force-yes autoremove

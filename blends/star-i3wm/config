@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-# star-fluxbox.blend
+# star-i3wm.blend
 
 core_packages+=(
 	
@@ -142,7 +142,7 @@ extra_packages+=(
 	pciutils
 	task-english
 	# kexec-tools
-	tint2
+	jwm
 	dunst
 	connman
 	connman-ui
@@ -164,14 +164,15 @@ extra_packages+=(
 	libnotify-bin
 	haveged
 	galternatives
-	#~ libsox-fmt-all
+	# libsox-fmt-all
 	inxi
 
 )
 
 extra_packages+=(	
 	
-	fluxbox
+	i3
+	i3status
 
 )
 

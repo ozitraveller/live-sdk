@@ -25,12 +25,14 @@ source $LIBPATH/zlibs/bootstrap
 source $LIBPATH/zlibs/cache
 source $LIBPATH/zlibs/helpers
 source $LIBPATH/zlibs/debian-installer
+source $LIBPATH/zlibs/d-i
 source $LIBPATH/zlibs/imaging
 source $LIBPATH/zlibs/iso
 source $LIBPATH/zlibs/kernel
 source $LIBPATH/zlibs/rsync
 source $LIBPATH/zlibs/sysconf
 source $LIBPATH/zlibs/vm
+source $LIBPATH/zlibs/override
 
 vars+=(libdevuansdk_version)
 vars+=(LIBPATH)

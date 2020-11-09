@@ -97,6 +97,74 @@ build_vagrant_dist() {
 	vm_pack_dist                       || { zerr; wrapup }
 }
 
+mainmenu() {
+		
+	if [ -x /usr/bin/dialog ] ; then
+		dialog \
+			--backtitle "Main menu" \
+			--radiolist "Choose an option below:" 21 40 14 \
+				1 bootstrap_complete_base off \
+				2 build_kernel_${arch} off \
+				3 iso_prepare_strap off \
+				4 bootstrap_thirdstage off \
+				5 install-customdebs off \
+				6 load_blend off \
+				7 cleanup off \
+				8 di_disk_info off \
+				9 di_debmirror off \
+				10 di_debian_installer off \
+				11 di_preseed_cfg off \
+				12 iso_syslinux off \
+				13 iso_squash_strap off \
+				14 iso_xorriso_build off 2>/tmp/live-sdk_$$
+		choice=$(cat /tmp/live-sdk_$$)
+		
+		clear
+		case $choice in
+			1)  bootstrap_complete_base || { zerr; wrapup }	
+				;;
+			2) 	build_kernel_${arch} || { zerr; wrapup }
+				iso_setup_kernel     || { zerr; wrapup }
+				;;
+			3) 	iso_prepare_strap || { zerr; wrapup }
+				;;
+			4)  bootstrap_thirdstage || { zerr; wrapup }
+				;;
+			5)  install-customdebs || { zerr; wrapup }
+				;;
+			6)  blend_preinst  || { zerr; wrapup }
+				blend_postinst || { zerr; wrapup }
+				blend_finalize || { zerr; wrapup }
+				;;
+			7)  fill_apt_cache || { zerr; wrapup }
+				;;
+			8)  di_disk_info || { zerr; wrapup }
+				;;
+			9)  di_debmirror  || { zerr; wrapup }
+				di_localudebs || { zerr; wrapup }
+				di_reprepro   || { zerr; wrapup }
+				;;
+			10) di_debian_installer || { zerr; wrapup } 
+				;;
+			11) di_preseed_cfg || { zerr; wrapup } 
+				;;
+			12) iso_syslinux           || { zerr; wrapup }
+				iso_write_isolinux_cfg || { zerr; wrapup }
+				iso_make_efi           || { zerr; wrapup }
+				iso_setup_variables    || { zerr; wrapup } 
+				;;
+			13) iso_squash_strap || { zerr; wrapup } 
+				;;
+			14) iso_xorriso_build || { zerr; wrapup } 
+				;;
+		esac
+		rm -f /tmp/live-sdk_$$	
+	else
+		echo "'dialog' needs package dialog, which is not installed." >&2
+		exit 1
+	fi
+}
+
 getfield() {
 	fn getfield $*
 	print "$1" | \
@@ -368,7 +436,6 @@ chroot-script() {
 	esac
 
 	sudo rm -f $chrootdir/$script
-
 }
 
 install_fake_package() {
@@ -426,9 +493,7 @@ syslinux() {
 	local pkgname="$1"
 	local pkgver="$2"
 	local section="$3"
-	ckreq || return 1	
-	
-	
+	ckreq || return 1
 }
 
 silly() {

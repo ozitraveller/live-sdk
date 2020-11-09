@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-# star-fluxbox.blend
+# star-xfce.blend
 
 core_packages+=(
 	
@@ -12,7 +12,7 @@ core_packages+=(
 	ntfs-3g
 	xfsprogs
 	xfsdump 
-	jfsutils 		
+ 	jfsutils 		
 	gpart
 	live-tools
 	eject
@@ -37,7 +37,6 @@ base_packages+=(
 	reportbug
 	usbutils
 	whois
-	dhcpcd5
 	net-tools
 	psmisc
 	wpasupplicant
@@ -142,7 +141,6 @@ extra_packages+=(
 	pciutils
 	task-english
 	# kexec-tools
-	tint2
 	dunst
 	connman
 	connman-ui
@@ -164,14 +162,36 @@ extra_packages+=(
 	libnotify-bin
 	haveged
 	galternatives
-	#~ libsox-fmt-all
-	inxi
+	# libsox-fmt-all
+	# inxi
+	# linux-headers-${arch}
 
 )
 
 extra_packages+=(	
 	
-	fluxbox
+	xfce4-panel 
+	xfce4-session 
+	xfce4-settings 
+	xfce4-terminal
+	xfce4-appfinder
+	xfce4-screenshooter
+	xfce4-notifyd
+	libnotify-bin
+	libxfce4ui-utils
+	xfce4-taskmanager
+	xfwm4 
+	xfdesktop4
+	qalculate-gtk
+	menu
+	thunar
+	thunar-data
+	thunar-volman
+	thunar-archive-plugin
+	thunar-media-tags-plugin
+	tumbler
+	file-roller
+	gtk3-engines-xfce
 
 )
 

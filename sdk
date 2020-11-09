@@ -24,6 +24,9 @@ R=${LIVE_SDK-$PWD}
 DEBUG=1
 QUIET=0
 
+debian_version="10"
+build_type="source" ## source or packages
+
 source $R/lib/zuper/zuper
 
 ## global vars
@@ -33,6 +36,8 @@ vars+=(os oslib blendlib)
 vars+=(MAKEOPTS)
 vars+=(release_name)
 vars+=(blendtype)
+vars+=(debian_version)
+
 
 ## global arrs
 arrs+=(extra_packages)
@@ -86,11 +91,9 @@ load() {
 	var=`find $R/blends -name "*.blend"`
 	echo "${var}" > /tmp/list_$$
 	
-	echo ${#blendlib[*]}
-
 	blendlib=()
 	[[ ${#blendlib[*]} = 0 ]] && {
-		echo "Cargando..."
+		echo "Loading..."
 		count=1
 		selected="on"
 		blendmap=()
@@ -101,13 +104,41 @@ load() {
 		done
 	}
 	
-	blend=""
+	unset blend
 	blend=$( dialog --backtitle "List of blends" \
                  --radiolist "Select the blend:" 20 100 10 \
                  "${blendmap[@]}" 3>&1 1>&2 2>&3 )
                  
 	blendlib=`sed "${blend}q;d" /tmp/list_$$`
-	echo "blend: ${blend}"
+	
+	if [[ $blendlib == *"generic"* ]]; then
+		var=`find $R/extra/blends-generic/blends -mindepth 1 -maxdepth 1 -type d -printf '%f\n'`
+		echo "${var}" > /tmp/list_$$
+		
+		# echo "$(cat /tmp/list_$$)"
+		
+		gblendtype=()
+		[[ ${#gblendtype[*]} = 0 ]] && {
+			echo "Loading..."
+			count=1
+			selected="on"
+			gblendtype=()
+			for item in $(cat /tmp/list_$$); do
+					echo $item
+					gblendtype+=( $count "${item}" $selected )
+					let count+=1
+					selected="off"
+			done
+		}
+		
+		gblend=$( dialog --backtitle "List of generic blends" \
+					 --radiolist "Select the generic blend:" 15 40 5 \
+					 "${gblendtype[@]}" 3>&1 1>&2 2>&3 )
+					 
+		blendtype=`sed "${gblend}q;d" /tmp/list_$$`
+		echo "blendtype ; ${blendtype}"
+	fi
+	
 	dialog \
 		--backtitle "Release Selection" \
 		--radiolist "Choose the release:" 10 40 4 \

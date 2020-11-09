@@ -20,246 +20,533 @@
 udebs_list=()
 udebs_list+=(
 
-	libgcrypt20-udeb
-	libgpg-error0-udeb
-	tzsetup-udeb
-	libvte-2.91-0-udeb
-	libvte-2.90-9-udeb
-	user-setup-udeb
-	libblkid1-udeb
-	cfdisk-udeb
-	libuuid1-udeb
-	libsmartcols1-udeb
-	util-linux-udeb
-	fdisk-udeb
-	usbutils-udeb
-	lvmcfg-utils
-	live-installer
-	libdevmapper1.02.1-udeb
-	lvm2-udeb
-	dmsetup-udeb
-	lowmem
-	lilo-installer
-	liblzo2-2-udeb
-	libusb-0.1-udeb
-	libusb-1.0-0-udeb
-	strace-udeb
-	squid-deb-proxy-client-udeb
-	libvdev1-udeb
-	libsysfs2-udeb
+	alsa-utils-udeb
+	apt-cdrom-setup
+	apt-mirror-setup
+	apt-setup-udeb
+	at-spi2-core-udeb
+	attr-udeb
+	base-installer
+	beep-udeb
+	bootstrap-base
+	bterm-unifont
+	btrfs-progs-udeb
+	ca-certificates-udeb
+	cdebconf-gtk-entropy
+	cdebconf-newt-entropy
+	cdebconf-newt-terminal
+	cdebconf-text-entropy
+	choose-init
+	choose-mirror
+	choose-mirror-bin
+	clock-setup
 	console-keymaps-mac
 	console-setup-amiga-ekmap
-	console-setup-sun5-ekmap
-	console-setup-linux-charmaps-udeb
-	console-setup-pc-ekbd
-	console-setup-macintoshold-ekmap
-	console-setup-freebsd-charmaps-udeb
-	console-setup-linux-fonts-udeb
-	console-setup-pc-ekmap
-	console-setup-udeb
-	console-setup-freebsd-fonts-udeb
 	console-setup-ataritt-ekmap
+	console-setup-freebsd-charmaps-udeb
+	console-setup-freebsd-fonts-udeb
+	console-setup-linux-charmaps-udeb
+	console-setup-linux-charmaps-udeb
+	console-setup-linux-fonts-udeb
+	console-setup-macintoshold-ekmap
+	console-setup-pc-ekbd
+	console-setup-pc-ekmap
 	console-setup-sun4-ekmap
-	cdebconf-newt-terminal
-	cpuburn-udeb
-	libcrack2-udeb
-	choose-mirror-bin
-	choose-mirror
-	cdebconf-newt-entropy
-	cdebconf-text-entropy
-	cdebconf-gtk-entropy
+	console-setup-sun5-ekmap
+	console-setup-udeb
+	console-setup-udeb
 	cryptsetup-udeb
-	libcryptsetup4-udeb
-	nobootloader
-	network-console
-	ntfs-3g-udeb
-	ndisc6-udeb
-	rdnssd-udeb
-	net-retriever
-	kexec-tools-udeb
-	libkmod2-udeb
+	dbus-udeb
+	debian-archive-keyring-udeb
+	debian-ports-archive-keyring-udeb
+	debootstrap-udeb
+	devio-udeb
+	devuan-keyring-udeb
+	disk-detect
+	di-utils-exit-installer
+	di-utils-mapdevfs
+	dmidecode-udeb
+	dmraid-udeb
+	dmsetup-udeb
+	dosfstools-udeb
+	driver-injection-disk-detect
+	e2fsprogs-udeb
+	eatmydata-udeb
+	efi-reader
+	eject-udeb
+	emdebian-archive-keyring-udeb
+	espeak-data-udeb
+	espeak-ng-data-udeb
+	espeakup-udeb
+	ethdetect
+	eudev-udeb
+	f2fs-tools-udeb
+	fdisk-udeb
+	finish-install
+	fonts-dejavu-udeb
+	fuse3-udeb
+	fuse-udeb
+	gpgv-udeb
+	grub-installer
+	grub-mount-udeb
+	haveged-udeb
 	initrd-kickseed
-	kickseed-common
-	klibc-utils-floppy-udeb
-	bterm-unifont
-	btrfs-tools-udeb
-	libisccfg-export90-udeb
-	libirs-export91-udeb
-	libisc-export95-udeb
-	libdns-export100-udeb
-	beep-udeb
-	base-installer
-	bootstrap-base
-	libtextwrap1-udeb
-	libxtst6-udeb
-	libxshmfence1-udeb
-	mountmedia
-	mdcfg-utils
-	multipath-udeb
-	kpartx-udeb
-	mbr-udeb
-	load-media
-	media-retriever
-	matchbox-window-manager-udeb
-	matchbox-keyboard-udeb
-	libmtdev1-udeb
-	mdadm-udeb
-	partman-nbd
-	partman-multipath
-	pcmciautils-udeb
-	partman-jfs
-	pkgsel
-	partman-auto
-	partman-btrfs
-	libpci3-udeb
-	pciutils-udeb
-	partman-xfs
-	libparted2-udeb
-	libparted-fs-resize0-udeb
-	parted-udeb
-	partman-iscsi
-	partconf-find-partitions
-	partman-lvm
-	partman-auto-crypto
-	network-preseed
-	partman-base
-	partman-utils
-	partman-crypto
-	partman-crypto-dm
-	partman-basicfilesystems
-	partman-basicmethods
-	partman-partitioning
-	partman-efi
-	libpopt0-udeb
-	partman-auto-raid
-	partman-ext3
-	partman-target
-	partman-md
-	partman-auto-lvm
-	jfsutils-udeb
-	libiw30-udeb
-	wireless-tools-udeb
-	wpasupplicant-udeb
-	wide-dhcpv6-client-udeb
-	libaio1-udeb
 	isc-dhcp-client-udeb
-	save-logs
-	libevdev2-udeb
-	libnl-3-200-udeb
-	libnl-genl-3-200-udeb
-	mkreiserfs-udeb
-	rescue-mode
-	rdate-udeb
-	attr-udeb
-	libattr1-udeb
-	alsa-utils-udeb
+	jfsutils-udeb
+	kexec-tools-udeb
+	kickseed-common
+	kpartx-udeb
+	libaio1-udeb
+	libargon2-1-udeb
 	libasound2-udeb
 	libatk-adaptor-udeb
 	libatk-bridge-2.0-0-udeb
 	libatspi0-udeb
-	at-spi2-core-udeb
-	zlib1g-udeb
+	libattr1-udeb
+	libblkid1-udeb
 	libbsd0-udeb
-	devio-udeb
-	di-utils-exit-installer
-	di-utils-mapdevfs
-	dmraid-udeb
-	libdmraid1.0.0.rc16-udeb
-	debian-archive-keyring-udeb
-	debootstrap-udeb
-	debian-ports-archive-keyring-udeb
-	dosfstools-udeb
-	dmidecode-udeb
-	dbus-udeb
+	libc6-udeb
+	libcap2-udeb
+	libcrack2-udeb
+	libcrypto1.1-udeb
+	libcryptsetup12-udeb
+	libdatrie1-udeb
 	libdbus-1-3-udeb
+	libdevmapper1.02.1-udeb
+	libdmraid1.0.0.rc16-udeb
+	libdns-export1104-udeb
+	libepoxy0-udeb
+	libeudev1-udeb
+	libevdev2-udeb
+	libfakekey0-udeb
+	libfdisk1-udeb
+	libffi6-udeb
+	libfuse2-udeb
+	libfuse3-3-udeb
+	libgail18-udeb
+	libgcrypt20-udeb
+	libgdk-pixbuf2.0-0-udeb
+	libgpg-error0-udeb
+	libgtk2.0-0-udeb
+	libgtk-3-0-udeb
+	libharfbuzz0-udeb
+	libinput10-udeb
+	libirs-export161-udeb
+	libisccc-export161-udeb
+	libisccfg-export163-udeb
+	libisc-export1100-udeb
+	libisns-nocrypto0-udeb
+	libiw30-udeb
+	libjson-c3-udeb
+	libkmod2-udeb
+	liblzo2-2-udeb
+	libmount1-udeb
+	libmtdev1-udeb
+	libnewt0.52-udeb
+	libnl-3-200-udeb
+	libnl-genl-3-200-udeb
+	libparted2-udeb
+	libparted-fs-resize0-udeb
+	libpci3-udeb
+	libpcre2-8-0-udeb
+	libpng16-16-udeb
+	libpopt0-udeb
+	libselinux1-udeb
+	libsmartcols1-udeb
+	libssl1.1-udeb
+	libsysfs2-udeb
+	libtextwrap1-udeb
+	libthai0-udeb
+	libthai-data-udeb
+	libtinfo6-udeb
+	libudev1-udeb
+	liburcu6-udeb
+	libusb-0.1-udeb
+	libusb-1.0-0-udeb
+	libuuid1-udeb
+	libvte-2.91-0-udeb
+	libwacom2-udeb
+	libwacom-common-udeb
+	libxfont2-udeb
+	libxshmfence1-udeb
+	libxtst6-udeb
+	libzstd1-udeb
+	lilo-installer
+	live-installer_57	
+	load-media
+	lowmem
+	lvm2
+	lvm2-udeb
+	lvmcfg-utils
+	matchbox-keyboard-udeb
+	matchbox-window-manager-udeb
+	mbr-udeb
+	mdadm-udeb
+	mdcfg-utils
+	media-retriever
+	mkreiserfs-udeb
+	mountmedia
+	multipath-udeb
+	ndisc6-udeb
+	netcfg
+	net-retriever
+	network-console
+	network-preseed
+	nobootloader
+	ntfs-3g-udeb
 	oldsys-preseed
+	open-iscsi-udeb
 	openssh-client-udeb
 	openssh-server-udeb
-	libcrypto1.0.0-udeb
 	os-prober-udeb
-	open-iscsi-udeb
-	finish-install
-	fonts-sil-scheherazade-udeb
-	fonts-mlym-udeb
-	fonts-taml-udeb
-	fuse-udeb
-	libfuse2-udeb
-	fonts-sil-padauk-udeb
-	fonts-khmeros-udeb
-	fonts-ukij-uyghur-udeb
-	fonts-thai-tlwg-udeb
-	fonts-tibetan-machine-udeb
-	fonts-sil-abyssinica-udeb
-	fonts-lao-udeb
-	fonts-farsiweb-udeb
-	fonts-knda-udeb
-	fonts-freefont-udeb
-	fonts-lohit-guru-udeb
-	fonts-lklug-sinhala-udeb
-	fonts-telu-udeb
-	fonts-dejavu-mono-udeb
-	fonts-dejavu-udeb
-	disk-detect
-	driver-injection-disk-detect
-	libharfbuzz0-udeb
+	partconf-find-partitions
+	parted-udeb
+	partman-auto
+	partman-auto-crypto
+	partman-auto-lvm
+	partman-auto-raid
+	partman-base
+	partman-basicfilesystems
+	partman-basicmethods
+	partman-btrfs	
+	partman-crypto
+	partman-crypto-dm
+	partman-efi
+	partman-ext3
+	partman-iscsi
+	partman-jfs
+	partman-lvm
+	partman-md
+	partman-multipath
+	partman-ndb
+	partman-partitioning
+	partman-target
+	partman-utils
+	partman-xfs
+	pciutils-udeb
+	pcmciautils-udeb
+	pkgsel
+	# ppp-udeb
+	rdate-udeb
+	rdnssd-udeb
+	rescue-mode
+	save-logs
+	screen-udeb
+	squid-deb-proxy-client-udeb
+	strace-udeb
+	tzsetup-udeb
+	udev_1
+	user-setup-udeb
+	util-linux-udeb
+	wget-udeb
+	wide-dhcpv6-client-udeb
+	wireless-tools-udeb
+	wpasupplicant-udeb
 	xfsprogs-udeb
-	libgdk-pixbuf2.0-0-udeb
-	libgtk2.0-0-udeb
-	grub-installer
-	gnupg-udeb
-	gpgv-udeb
-	grub-mount-udeb
-	libnss-files-udeb
-	libc6-udeb
-	libnss-dns-udeb
-	libgtk-3-0-udeb
-	emdebian-archive-keyring-udeb
-	espeakup-udeb
-	e2fsprogs-udeb
-	efi-reader
-	eject-udeb
-	espeak-data-udeb
-	libfakekey0-udeb
-	libffi6-udeb
-	kernel-image
+	xserver-xorg-input-libinput-udeb
+	zlib1g-udeb
+	
 )
+
+	#~ libgcrypt20-udeb
+	#~ libgpg-error0-udeb
+	#~ tzsetup-udeb
+	#~ libvte-2.91-0-udeb
+	#~ libvte-2.90-9-udeb
+	#~ user-setup-udeb
+	#~ libblkid1-udeb
+	#~ cfdisk-udeb
+	#~ libuuid1-udeb
+	#~ libsmartcols1-udeb
+	#~ util-linux-udeb
+	#~ fdisk-udeb
+	#~ usbutils-udeb
+	#~ lvmcfg-utils
+	#~ live-installer
+	#~ libdevmapper1.02.1-udeb
+	#~ lvm2-udeb
+	#~ lvm2_2
+	#~ dmsetup-udeb
+	#~ lowmem
+	#~ lilo-installer
+	#~ liblzo2-2-udeb
+	#~ libusb-0.1-udeb
+	#~ libusb-1.0-0-udeb
+	#~ strace-udeb
+	#~ squid-deb-proxy-client-udeb
+	#~ libvdev1-udeb
+	#~ libsysfs2-udeb
+	#~ console-keymaps-mac
+	#~ console-setup-amiga-ekmap
+	#~ console-setup-sun5-ekmap
+	#~ console-setup-linux-charmaps-udeb
+	#~ console-setup-pc-ekbd
+	#~ console-setup-macintoshold-ekmap
+	#~ console-setup-freebsd-charmaps-udeb
+	#~ console-setup-linux-fonts-udeb
+	#~ console-setup-pc-ekmap
+	#~ console-setup-udeb
+	#~ console-setup-freebsd-fonts-udeb
+	#~ console-setup-ataritt-ekmap
+	#~ console-setup-sun4-ekmap
+	#~ cdebconf-newt-terminal
+	#~ cpuburn-udeb
+	#~ libcrack2-udeb
+	#~ choose-mirror-bin
+	#~ choose-mirror
+	#~ cdebconf-newt-entropy
+	#~ cdebconf-text-entropy
+	#~ cdebconf-gtk-entropy
+	#~ cryptsetup-udeb
+	#~ libcryptsetup4-udeb
+	#~ nobootloader
+	#~ network-console
+	#~ ntfs-3g-udeb
+	#~ ndisc6-udeb
+	#~ rdnssd-udeb
+	#~ net-retriever
+	#~ kexec-tools-udeb
+	#~ libkmod2-udeb
+	#~ initrd-kickseed
+	#~ kickseed-common
+	#~ klibc-utils-floppy-udeb
+	#~ bterm-unifont
+	#~ btrfs-tools-udeb
+	#~ libisccfg-export90-udeb
+	#~ libirs-export91-udeb
+	#~ libisc-export95-udeb
+	#~ libdns-export100-udeb
+	#~ beep-udeb
+	#~ base-installer
+	#~ bootstrap-base
+	#~ libtextwrap1-udeb
+	#~ libxtst6-udeb
+	#~ libxshmfence1-udeb
+	#~ mountmedia
+	#~ mdcfg-utils
+	#~ multipath-udeb
+	#~ kpartx-udeb
+	#~ mbr-udeb
+	#~ load-media
+	#~ media-retriever
+	#~ matchbox-window-manager-udeb
+	#~ matchbox-keyboard-udeb
+	#~ libmtdev1-udeb
+	#~ mdadm-udeb
+	#~ partman-nbd
+	#~ partman-multipath
+	#~ pcmciautils-udeb
+	#~ partman-jfs
+	#~ pkgsel
+	#~ partman-auto
+	#~ partman-btrfs
+	#~ libpci3-udeb
+	#~ pciutils-udeb
+	#~ partman-xfs
+	#~ libparted2-udeb
+	#~ libparted-fs-resize0-udeb
+	#~ parted-udeb
+	#~ partman-iscsi
+	#~ partconf-find-partitions
+	#~ partman-lvm
+	#~ partman-auto-crypto
+	#~ network-preseed
+	#~ partman-base
+	#~ partman-utils
+	#~ partman-crypto
+	#~ partman-crypto-dm
+	#~ partman-basicfilesystems
+	#~ partman-basicmethods
+	#~ partman-partitioning
+	#~ partman-efi
+	#~ libpopt0-udeb
+	#~ partman-auto-raid
+	#~ partman-ext3
+	#~ partman-target
+	#~ partman-md
+	#~ partman-auto-lvm
+	#~ jfsutils-udeb
+	#~ libiw30-udeb
+	#~ wireless-tools-udeb
+	#~ wpasupplicant-udeb
+	#~ wide-dhcpv6-client-udeb
+	#~ libaio1-udeb
+	#~ isc-dhcp-client-udeb
+	#~ save-logs
+	#~ libevdev2-udeb
+	#~ libnl-3-200-udeb
+	#~ libnl-genl-3-200-udeb
+	#~ mkreiserfs-udeb
+	#~ rescue-mode
+	#~ rdate-udeb
+	#~ attr-udeb
+	#~ libattr1-udeb
+	#~ alsa-utils-udeb
+	#~ libasound2-udeb
+	#~ libatk-adaptor-udeb
+	#~ libatk-bridge-2.0-0-udeb
+	#~ libatspi0-udeb
+	#~ at-spi2-core-udeb
+	#~ zlib1g-udeb
+	#~ libbsd0-udeb
+	#~ devio-udeb
+	#~ di-utils-exit-installer
+	#~ di-utils-mapdevfs
+	#~ dmraid-udeb
+	#~ libdmraid1.0.0.rc16-udeb
+	#~ debian-archive-keyring-udeb
+	#~ debootstrap-udeb
+	#~ debian-ports-archive-keyring-udeb
+	#~ dosfstools-udeb
+	#~ dmidecode-udeb
+	#~ dbus-udeb
+	#~ libdbus-1-3-udeb
+	#~ oldsys-preseed
+	#~ openssh-client-udeb
+	#~ openssh-server-udeb
+	#~ libcrypto1.0.0-udeb
+	#~ os-prober-udeb
+	#~ open-iscsi-udeb
+	#~ finish-install
+	#~ # fonts-sil-scheherazade-udeb
+	#~ # fonts-mlym-udeb
+	#~ # fonts-taml-udebpkgsel
+	#~ # fonts-taml-udeb
+	#~ fuse-udeb
+	#~ fuse3-udeb
+	#~ libfuse2-udeb
+	#~ # fonts-sil-padauk-udeb
+	#~ # fonts-khmeros-udeb
+	#~ # fonts-ukij-uyghur-udeb
+	#~ # fonts-thai-tlwg-udeb
+	#~ # fonts-tibetan-machine-udeb
+	#~ # fonts-sil-abyssinica-udeb
+	#~ # fonts-lao-udeb
+	#~ # fonts-farsiweb-udeb
+	#~ # fonts-knda-udeb
+	#~ # fonts-freefont-udeb
+	#~ # fonts-lohit-guru-udeb
+	#~ # fonts-lklug-sinhala-udeb
+	#~ # fonts-telu-udeb
+	#~ # fonts-dejavu-mono-udeb
+	#~ fonts-dejavu-udeb
+	#~ disk-detect
+	#~ driver-injection-disk-detect
+	#~ libharfbuzz0-udeb
+	#~ xfsprogs-udeb
+	#~ libgdk-pixbuf2.0-0-udeb
+	#~ libgtk2.0-0-udeb
+	#~ grub-installer
+	#~ gnupg-udeb
+	#~ gpgv-udeb
+	#~ grub-mount-udeb
+	#~ libnss-files-udeb
+	#~ libc6-udeb
+	#~ libnss-dns-udeb
+	#~ libgtk-3-0-udeb
+	#~ emdebian-archive-keyring-udeb
+	#~ espeakup-udeb
+	#~ espeak-ng-data-udeb
+	#~ e2fsprogs-udeb
+	#~ efi-reader
+	#~ eject-udeb
+	#~ espeak-data-udeb
+	#~ eatmydata-udeb
+	#~ libfakekey0-udeb
+	#~ libffi6-udeb
+	#~ kernel-image
+	#~ ca-certificates-udeb
+	#~ apt-cdrom-setup
+	#~ apt-mirror-setup
+	#~ apt-setup-udeb
+	#~ btrfs-progs-udeb
+	#~ # choose-init
+	#~ clock-setup
+	#~ ethdetect
+	#~ haveged-udeb
+	#~ wget-udeb
+	#~ xserver-xorg-input-libinput-udeb
+	#~ eudev-udeb
+	#~ devuan-keyring-udeb
+	
+
+#~ )
 
 modules_list=()
 modules_list+=(
-	
-	uinput
-	fuse
-	nic
-	nic-usb
-	ext4
+
 	btrfs
-	mmc-core
+	crc
 	crypto-dm
+	crypto
+	efi
+	event
+	ext4
+	firewire-core
+	fuse
+	i2c
+	jfs
+	loop
+	md
+	mmc-core
+	mtd-core
+	multipath
+	nbd
+	nic
+	nic-pcmcia
+	nic-shared
+	nic-usb
+	nic-wireless
+	pata
+	pcmcia-storage
+	perl
+	ppp
+	scsi-nic
+	sound
 	squashfs
 	udf
-	loop
-	nic-shared
-	scsi-core
-	scsi
-	firewire-core
-	crypto
-	pcmcia-storage
-	i2c
-	ntfs
-	crc
-	md
-	virtio
-	jfs
-	efi
-	multipath
-	nic-pcmcia
-	pata
-	sound
-	event
+	uinput
 	xfs
+	vitrio
 	hyperv
-	nbd
+
 )
+#~ modules_list+=(
+	
+	#~ uinput
+	#~ fuse
+	#~ nic
+	#~ nic-usb
+	#~ nic-wireless
+	#~ ext4
+	#~ btrfs
+	#~ mmc-core
+	#~ crypto-dm
+	#~ squashfs
+	#~ udf
+	#~ loop
+	#~ nic-shared
+	#~ scsi-core
+	#~ scsi
+	#~ firewire-core
+	#~ crypto
+	#~ pcmcia-storage
+	#~ i2c
+	#~ ntfs
+	#~ crc
+	#~ md
+	#~ virtio
+	#~ jfs
+	#~ efi
+	#~ multipath
+	#~ nic-pcmcia
+	#~ pata
+	#~ sound
+	#~ event
+	#~ xfs
+	#~ hyperv
+
+#~ )
 
 var=${abiname%.*}
 
